@@ -1,0 +1,6 @@
+# Systemdateien
+.DS_Store
+# Geheimnisse – niemals hochladen
+.env
+*.key
+secrets*
