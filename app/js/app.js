@@ -6,9 +6,10 @@
 
   /* ---------- Formatierung (App und später PDF nutzen dieselben Funktionen) ---------- */
   var nf = function (d) { return new Intl.NumberFormat("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d }); };
-  function euro(x, d) { if (!IFP.istZahl(x)) return "–"; return nf(d === undefined ? 2 : d).format(x) + " €"; }
-  function proz(x, d) { if (!IFP.istZahl(x)) return "–"; return nf(d === undefined ? 2 : d).format(x * 100) + " %"; }
-  function zahl(x, d) { if (!IFP.istZahl(x)) return "–"; return nf(d === undefined ? 2 : d).format(x); }
+  function minus(t) { return t.replace(/^-/, "−"); }
+  function euro(x, d) { if (!IFP.istZahl(x)) return "–"; return minus(nf(d === undefined ? 2 : d).format(x)) + " €"; }
+  function proz(x, d) { if (!IFP.istZahl(x)) return "–"; return minus(nf(d === undefined ? 2 : d).format(x * 100)) + " %"; }
+  function zahl(x, d) { if (!IFP.istZahl(x)) return "–"; return minus(nf(d === undefined ? 2 : d).format(x)); }
   function esc(s) { return String(s === null || s === undefined ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   IFP.format = { euro: euro, proz: proz, zahl: zahl };
 
@@ -442,23 +443,40 @@
     var erg = IFP.ergebnis(), ks = kennzahlen(erg), g = erg.gesamt, z = { gruen: 0, gelb: 0, rot: 0, unvollstaendig: 0 };
     erg.ampeln.forEach(function (q) { if (z[q.status] !== undefined) z[q.status]++; });
     var aktiv = ks.filter(function (k) { return k.id === aktiveKennzahl; })[0] || ks[1];
-    var kacheln = ks.map(function (k) {
+    var kachel = function (k) {
       var q = k.ampel, nb = q && q.status === "nichtbewertet";
       return '<button class="kachel' + (k.id === aktiv.id ? " aktiv" : "") + (nb ? " nb" : "") + '" data-aktion="kennzahl" data-id="' + k.id + '" aria-pressed="' + (k.id === aktiv.id) + '"><span class="t">' + esc(k.titel) + '<span aria-hidden="true">ⓘ</span></span><span class="z">' + k.wert + "</span>" + (q ? ampel(q.status) : "") + '<span class="u">' + esc(q && (q.status === "unvollstaendig" || nb) ? ampelZusatz(q) : k.unter) + "</span></button>";
-    }).join("");
+    };
+    var istPflicht = function (k) { var d = IFP.SCHWELLEN_STANDARD[k.id]; return d && d.art === "pflicht"; };
+    var kacheln = '<h3 class="gruppen-titel">Das prüft die Bank <span class="klein zweit">(fließt ins Gesamturteil ein)</span></h3><div class="kacheln">' + ks.filter(istPflicht).map(kachel).join("") + "</div>" +
+      '<h3 class="gruppen-titel">Zusätzlich für dich <span class="klein zweit">(Marktvergleich, freiwillige Angaben)</span></h3><div class="kacheln">' + ks.filter(function (k) { return !istPflicht(k); }).map(kachel).join("") + "</div>";
+    var w = erg.werte, ex = IFP.eingaben().e, hb = [], sw = IFP.schwellen();
+    var auf = function (v, d) { var f = Math.pow(10, d); return Math.ceil(v * f - 1e-9) / f; }; // „mindestens“ → aufrunden
+    if (IFP.istZahl(w.CF) && w.CF < 0) {
+      if (IFP.istZahl(w.H_KM_CF0)) hb.push(["Kaltmiete für Cashflow 0 €", euro(auf(w.H_KM_CF0, 2)) + " statt " + euro(ex.KM)]);
+      if (IFP.istZahl(w.H_EK_CF0)) hb.push(["oder mehr Eigenkapital für Cashflow 0 €", "+ " + euro(auf(w.H_EK_CF0, 0), 0)]);
+    }
+    if (IFP.istZahl(w.DSCR) && w.DSCR < sw.DSCR.gruen && IFP.istZahl(w.H_KM_DSCR)) hb.push(["Kaltmiete für DSCR " + zahl(sw.DSCR.gruen), euro(auf(w.H_KM_DSCR, 2))]);
+    if (IFP.istZahl(w.H_EK_LTV) && w.H_EK_LTV > 0) hb.push(["Mehr Eigenkapital für Beleihungsauslauf ≤ " + proz(sw.LTV_BANK.gelb, 0), "+ " + euro(auf(w.H_EK_LTV, 0), 0)]);
+    if (IFP.istZahl(w.KP_max) && IFP.istZahl(ex.KP) && w.KP_max < ex.KP) hb.push(["Kaufpreis für " + proz(IFP.annahmenFlach(Z.einstellungen.annahmen).ZR, 0) + " Zielrendite (Verhandlungsziel)", euro(w.KP_max, 0)]);
+    var hebel = hb.length ? '<div class="karte"><h3>Was müsste sich ändern?</h3><p class="klein zweit">Jede Zeile für sich gerechnet, die anderen Werte bleiben gleich. Hilft beim Verhandeln und im Bankgespräch.</p>' +
+      rechenTabelle(hb.map(function (h) { return ["", esc(h[0]), h[1]]; }), "Stellschrauben") +
+      (Z.objekt.felder.HG_nu && Z.objekt.felder.HG_nu.zustand === "annahme" ? '<p class="klein"><span class="badge annahme">Annahme</span> Gerechnet mit dem geschätzten nicht umlagefähigen Hausgeld.</p>' : "") + "</div>" : "";
     var kopf = '<div class="objekt-zeile"><h2 style="flex:1;margin:0">Auswertung</h2><span class="klein zweit">Stand ' + new Date().toLocaleDateString("de-DE") + "</span></div>" +
       '<div class="karte flach"><div class="objekt-zeile"><b>Gesamt:</b> ' + ampel(g.status) + ' <span class="klein">' + g.gruen + " von " + g.bewertet + " bewerteten Prüfungen grün</span></div>" +
       (g.status === "unvollstaendig" ? '<p class="klein" style="margin-top:.5rem">Kein Gesamturteil, solange Pflichtprüfungen offen sind: ' + esc(g.offen.join(", ")) + ".</p>" : "") +
       '<div class="ampel-zusammen" style="margin-top:.5rem">' + ampel("rot", "(" + z.rot + ")") + ampel("gelb", "(" + z.gelb + ")") + ampel("gruen", "(" + z.gruen + ")") + ampel("unvollstaendig", "(" + z.unvollstaendig + ")") + "</div></div>";
-    return nichtBestaetigt() + '<div class="mit-panel drei"><section>' + kopf + heroHTML(erg) + '<div class="kacheln">' + kacheln + "</div>" +
+    return nichtBestaetigt() + '<div class="mit-panel drei"><section>' + kopf + heroHTML(erg) + kacheln + hebel +
       '</section><aside class="panel immer" id="detail">' + kennzahlPanel(aktiv) + '</aside><div class="aktionen"><div class="btn-reihe"><a class="btn link" href="#bank">Alle Formeln: So rechnet die Bank</a><a class="btn link" href="#entwicklung">10-Jahres-Entwicklung</a><a class="btn link" href="#markt">Marktvergleich</a></div>' +
       '<div class="btn-reihe"><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button><button class="btn primaer" data-aktion="gehe" data-ziel="praesentation">Präsentation für die Bank</button></div></div></div>';
   };
 
   V.bank = function () {
     var erg = IFP.ergebnis(), ks = kennzahlen(erg);
-    return "<h2>So rechnet die Bank</h2><p>Alle Kennzahlen mit Formel, deinen eingesetzten Zahlen und Schwellen. Grundlage: Formel-Spezifikation " + IFP.SPEZ + ".</p>" +
-      ks.map(kennzahlPanel).join("") + '<p class="klein zweit">Banken rechnen unterschiedlich. Die Werte sind Orientierung, keine Finanzberatung und keine Zusage einer Bank.</p>';
+    var uebersicht = '<nav class="karte flach" aria-label="Kennzahlen im Überblick"><h3>Überblick</h3><ul class="chip-liste">' + ks.map(function (k) {
+      return '<li><a href="#bank" data-aktion="springe" data-ziel="kz-' + k.id + '">' + esc(k.titel) + " " + (k.ampel ? ampel(k.ampel.status) : "") + "</a></li>"; }).join("") + "</ul></nav>";
+    return "<h2>So rechnet die Bank</h2><p>Alle Kennzahlen mit Formel, deinen eingesetzten Zahlen und Schwellen. Grundlage: Formel-Spezifikation " + IFP.SPEZ + ".</p>" + uebersicht +
+      ks.map(function (k) { return '<div id="kz-' + k.id + '" tabindex="-1">' + kennzahlPanel(k) + "</div>"; }).join("") + '<p class="klein zweit">Banken rechnen unterschiedlich. Die Werte sind Orientierung, keine Finanzberatung und keine Zusage einer Bank.</p>';
   };
 
   function diagramm(verlauf) {
@@ -716,6 +734,7 @@
         if (offeneUnsichere() > 0) { toast("Bitte zuerst den gelb markierten Wert klären."); break; }
         o.bestaetigt = true; IFP.FELDER.forEach(function (d) { var f5 = o.felder[d.id]; if (f5.herkunft === "ki" && f5.zustand !== "leer") f5.herkunft = "bestaetigt"; });
         speichern(); gehe("luecken"); break;
+      case "springe": { ev.preventDefault(); var zz = document.getElementById(el.dataset.ziel); if (zz) { zz.scrollIntoView({ behavior: "smooth", block: "start" }); zz.focus({ preventScroll: true }); } break; }
       case "feld-oeffnen": gewaehltesFeld = el.dataset.feld; gehe("pruefen"); break;
       case "luecken-kopieren": {
         var ta = document.getElementById("luecken-text");

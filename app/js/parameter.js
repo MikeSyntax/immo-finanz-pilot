@@ -4,7 +4,7 @@
 window.IFP = window.IFP || {};
 
 IFP.VERSION = "0.1.0-geruest";
-IFP.SPEZ = "03 v0.3";
+IFP.SPEZ = "03 v0.4";
 
 /* Bank-Annahmen (🔧). Prozentwerte als Dezimalzahl (0.02 = 2 %). */
 IFP.ANNAHMEN_STANDARD = {

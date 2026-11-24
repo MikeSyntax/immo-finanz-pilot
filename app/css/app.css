@@ -239,3 +239,7 @@ dialog .d-fuss { padding: 0 1.25rem 1.25rem; display: flex; flex-wrap: wrap; gap
 .hero .grosse-zahlen b { white-space: nowrap; }
 @media (min-width: 834px) { .panel .hero .grosse-zahlen { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 .ergebnisleiste b { white-space: nowrap; }
+.gruppen-titel { margin: 1.25rem 0 .5rem; font-size: 1rem; }
+.chip-liste { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip-liste a { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: .25rem .6rem; border: 1px solid var(--linie); border-radius: 999px; color: var(--text); text-decoration: none; font-size: .875rem; background: var(--bg); }
+[id^="kz-"] { scroll-margin-top: 80px; }

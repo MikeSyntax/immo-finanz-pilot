@@ -126,6 +126,11 @@
       W.DSCR = W.R > 0 ? (W.JKM - e.HG_nu * 12) / (W.R * 12) : null;
       if (W.R === 0) W.DSCR_na = true;
     }
+    // 36 Stellschrauben (Rückwärtsrechnung, 03 v0.4, freigegeben 24.11.2026): was müsste sich ändern?
+    if (istZahl(W.CF) && W.CF < 0 && istZahl(e.i) && istZahl(e.t) && (e.i + e.t) > 0) W.H_EK_CF0 = -W.CF * 12 / (e.i + e.t);
+    if (istZahl(W.R) && istZahl(e.HG_nu) && a.MAW < 1) W.H_KM_CF0 = (e.HG_nu + W.R) / (1 - a.MAW);
+    if (istZahl(W.R) && W.R > 0 && istZahl(e.HG_nu) && s.DSCR) W.H_KM_DSCR = s.DSCR.gruen * W.R + e.HG_nu;
+    if (istZahl(W.D) && istZahl(W.BLW) && s.LTV_BANK) W.H_EK_LTV = Math.max(W.D - s.LTV_BANK.gelb * W.BLW, 0);
     // 25b Beleihungswert – zweite Sicht (nur mit Referenzpreis)
     if (istZahl(e.RP_m2) && istZahl(e.WFL) && e.AUS) {
       var af = { einfach: a.AF_EINFACH, mittel: a.AF_MITTEL, gut: a.AF_GUT }[e.AUS];

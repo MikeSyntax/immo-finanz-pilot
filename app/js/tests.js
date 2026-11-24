@@ -22,7 +22,8 @@
     KNK: [15387.30, "€"], GI: [154387.30, "€"], D: [124387.30, "€"], R: [601.21, "€"], RS_10: [94180.37, "€"],
     BMR: [0.0401, "%"], KPF: [24.91, "x"], KP_m2: [2380.14, "€"], KM_m2: [7.96, "€"], KM_noetig_m2: [9.92, "€"],
     KP_max: [111600.00, "€"], CF: [-218.51, "€"], GB: [674.21, "€"], BLW: [118150.00, "€"], LTV_Bank: [1.0528, "%"],
-    LTV_Markt: [0.8949, "%"], DSCR: [0.65, "x"], Z_ZB: [41937.71, "€"], Z_ges: [78072.67, "€"], VZ_10: [14756.93, "€"]
+    LTV_Markt: [0.8949, "%"], DSCR: [0.65, "x"], Z_ZB: [41937.71, "€"], Z_ges: [78072.67, "€"], VZ_10: [14756.93, "€"],
+    H_EK_CF0: [45207.99, "€"], H_KM_CF0: [687.97, "€"], H_KM_DSCR: [794.45, "€"], H_EK_LTV: [6237.30, "€"]
   }, { CF: "unvollstaendig", DSCR: "unvollstaendig", LTV_BANK: "rot", KP_REF: "gruen", MIETE_REF: "rot", GESAMT: "unvollstaendig" });
 
   fall("T3 Leipzig E3 – Hausgeld bestätigt", T3, [], {}, { CF: "rot", DSCR: "rot", GESAMT: "rot" });
