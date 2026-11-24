@@ -536,22 +536,63 @@
       '<div class="hinweis ki"><b>KI-Einordnung</b> <span class="badge demo">noch nicht angebunden</span><br><span class="klein">Die KI ordnet später nur diese hinterlegten Werte ein und nennt Unsicherheiten. Sie erfindet keine Vergleichspreise.</span></div>';
   };
 
+  /* Offene Punkte für die Präsentation (US-06 AK 1, E5): jede Ursache nur einmal */
+  function offenePunkte() {
+    var o = Z.objekt, fin = o.finanzierung, l = [];
+    if (!o.bestaetigt) l.push({ text: "Werte in der Prüfmaske noch nicht bestätigt", aktion: "gehe", ziel: "pruefen" });
+    IFP.FELDER.forEach(function (d) {
+      if (!d.kern) return;
+      var f = o.felder[d.id], lab = (/^davon/.test(d.label) ? "Hausgeld – " : "") + d.label;
+      if (d.id === "ORT") { if (!o.ort || !o.bundesland) l.push({ text: "Ort / Bundesland fehlt", aktion: "feld-oeffnen", feld: "ORT" }); return; }
+      if (f.unsicher && !f.geklaert) l.push({ text: lab + ": unsicherer Wert", aktion: "feld-oeffnen", feld: d.id });
+      else if (f.zustand === "leer") l.push({ text: lab + " fehlt", aktion: "feld-oeffnen", feld: d.id });
+      else if (f.zustand === "annahme") l.push({ text: lab + " ist nur geschätzt (Annahme)", aktion: "feld-oeffnen", feld: d.id });
+    });
+    [["EK", "Eigenkapital"], ["i", "Sollzins"], ["t", "Tilgung"], ["ZB", "Zinsbindung"]].forEach(function (q) { if (!IFP.istZahl(fin[q[0]])) l.push({ text: q[1] + " fehlt", aktion: "gehe", ziel: "finanzierung" }); });
+    return l;
+  }
+  function vorschauSeite1(erg, entwurf) {
+    var w = erg.werte, x = IFP.eingaben().e, o = Z.objekt, ks = kennzahlen(erg).filter(function (k) { var d = IFP.SCHWELLEN_STANDARD[k.id]; return d && d.art === "pflicht"; });
+    return '<div class="seite-vorschau" aria-label="Vorschau Seite 1">' + (entwurf ? '<div class="entwurf-stempel" aria-hidden="true">Entwurf</div>' : "") +
+      '<div class="sv-kopf"><img src="assets/logo-hell.svg" alt="Immo Finanz Pilot" onerror="this.style.display=\'none\'"><span>Objekt-Präsentation · Seite 1 von ca. 8</span></div>' +
+      "<h3>" + esc(o.adresse || o.ort || "Objekt ohne Namen") + "</h3>" +
+      '<p class="klein zweit">' + [x.WFL ? zahl(x.WFL, 1) + " m²" : "", o.felder.BJ && o.felder.BJ.wert ? "Baujahr " + o.felder.BJ.wert : "", o.bundesland || ""].filter(Boolean).join(" · ") + "</p>" +
+      '<div class="sv-zahlen"><div>Kaufpreis<b>' + euro(x.KP, 0) + "</b></div><div>Darlehen<b>" + euro(w.D, 0) + "</b></div><div>Rate / Monat<b>" + euro(w.R) + "</b></div><div>Cashflow / Monat<b>" + euro(w.CF) + "</b></div></div>" +
+      '<p style="margin:.5rem 0"><b>Gesamt:</b> ' + ampel(erg.gesamt.status) + ' <span class="klein">' + erg.gesamt.gruen + " von " + erg.gesamt.bewertet + " Prüfungen grün</span></p>" +
+      '<ul class="sv-ampeln">' + ks.map(function (k) { return "<li><span>" + esc(k.titel) + "</span><span>" + k.wert + " " + (k.ampel ? ampel(k.ampel.status) : "") + "</span></li>"; }).join("") + "</ul>" +
+      '<p class="klein zweit" style="margin-top:.5rem">Erstellt mit Immo Finanz Pilot am ' + new Date().toLocaleDateString("de-DE") + " · keine Finanzberatung · Grundlage: Formel-Spezifikation " + IFP.SPEZ + "</p></div>";
+  }
   V.praesentation = function () {
-    var erg = IFP.ergebnis(), o = Z.objekt, offen = erg.gesamt.offen.length + IFP.FELDER.filter(function (d) { return d.kern && d.id !== "ORT" && o.felder[d.id].zustand !== "wert" && o.felder[d.id].zustand !== "null"; }).length;
-    var kap = ["Kurzfassung auf einen Blick", "Objekt-Steckbrief", "Kapitalbedarf und Finanzierung", "Rentabilität", "So rechnet die Bank", "Zehn-Jahres-Entwicklung", "Unterlagen-Checkliste und offene Punkte", "Investor-Kurzprofil (nur wenn ausgefüllt)", "Annahmen und Hinweise"];
-    var profil = Z.lokal.profil.aktiv;
+    var erg = IFP.ergebnis(), o = Z.objekt, op = offenePunkte(), entwurf = op.length > 0 || erg.gesamt.status === "unvollstaendig";
+    var profil = Z.lokal.profil.aktiv, hatAnnahme = IFP.FELDER.some(function (d) { return o.felder[d.id] && o.felder[d.id].zustand === "annahme"; });
+    var st = function (ok, warn, txt) { return ok ? '<span class="badge ok">vollständig</span>' : '<span class="badge ' + (warn ? "annahme" : "fehlt") + '">' + esc(txt) + "</span>"; };
+    var w = erg.werte, x = IFP.eingaben().e;
+    var kap = [
+      ["Kurzfassung auf einen Blick", st(!entwurf, true, "Entwurf")],
+      ["Objekt-Steckbrief", st(IFP.istZahl(x.KP) && IFP.istZahl(x.WFL) && !!o.ort, false, "Angaben fehlen")],
+      ["Kapitalbedarf und Finanzierung", st(IFP.istZahl(w.R), false, "Finanzierung fehlt")],
+      ["Rentabilität", st(IFP.istZahl(w.CF) && !hatAnnahme, IFP.istZahl(w.CF), IFP.istZahl(w.CF) ? "mit Annahme" : "Angaben fehlen")],
+      ["So rechnet die Bank (inkl. „Was müsste sich ändern?“)", st(erg.gesamt.status !== "unvollstaendig", true, "Ampeln teils grau")],
+      ["Zehn-Jahres-Entwicklung", st(!!w.verlauf, true, "Prognose fehlt")],
+      ["Unterlagen-Checkliste und offene Punkte", '<span class="badge ok">immer dabei</span>'],
+      ["Investor-Kurzprofil", profil ? '<span class="badge ok">dabei (nur lokal)</span>' : '<span class="badge fehlt">entfällt – kein Profil</span>'],
+      ["Annahmen und Hinweise", '<span class="badge ok">immer dabei</span>']
+    ];
     var ki = o.kiTexte.zusammenfassung || { text: "", an: false, geprueft: false };
-    return "<h2>Objekt-Präsentation für die Bank</h2><p>Immer dasselbe Schema, damit deine Bank jedes Objekt schnell erfasst. Das PDF wird auf deinem Gerät erzeugt.</p>" +
-      (offen ? '<div class="hinweis warnung">Es sind noch <b>' + offen + " Punkte offen</b>. Die Präsentation wird als <b>„Entwurf – " + offen + " offene Punkte“</b> erstellt; betroffene Kapitel zeigen, was fehlt.</div>" : "") +
-      '<div class="karte"><h3>Inhalt (9 Kapitel, voraussichtlich 6–8 Seiten)</h3><ol>' + kap.map(function (k, i) { return "<li>" + esc(k) + (i === 7 && !profil ? ' <span class="badge fehlt">entfällt – kein Profil ausgefüllt</span>' : "") + "</li>"; }).join("") + "</ol>" +
-      '<p class="klein"><a href="#haushalt">Kurzprofil ausfüllen (freiwillig, bleibt lokal)</a></p></div>' +
+    var offenHTML = op.length ? '<div class="hinweis warnung"><b>' + op.length + (op.length === 1 ? " offener Punkt" : " offene Punkte") + ':</b> Die Präsentation wird als <b>„Entwurf“</b> gekennzeichnet, bis alles geklärt ist.<ul>' +
+      op.map(function (p) { return "<li>" + esc(p.text) + ' <button class="btn link" data-aktion="' + p.aktion + '"' + (p.feld ? ' data-feld="' + p.feld + '"' : "") + (p.ziel ? ' data-ziel="' + p.ziel + '"' : "") + ">klären</button></li>"; }).join("") + "</ul></div>" :
+      '<div class="hinweis ok"><b>Alle Pflichtangaben belegt.</b> Die Präsentation wird ohne „Entwurf“-Vermerk erstellt.</div>';
+    var links = "<h2>Objekt-Präsentation für die Bank</h2><p>Immer dasselbe Schema, damit deine Bank jedes Objekt schnell erfasst. Das PDF wird auf deinem Gerät erzeugt, es wird nichts verschickt.</p>" + offenHTML +
+      '<div class="karte"><h3>Inhalt: 9 Kapitel, voraussichtlich 6–8 Seiten</h3><ol class="kapitel">' + kap.map(function (k) { return "<li><span>" + esc(k[0]) + "</span>" + k[1] + "</li>"; }).join("") + "</ol>" +
+      (profil ? "" : '<p class="klein"><a href="#haushalt">Kurzprofil ausfüllen (freiwillig, bleibt auf diesem Gerät)</a></p>') + "</div>" +
       '<div class="karte"><h3>Zusammenfassung für die Bank <span class="badge ki">KI-Vorschlag</span></h3>' +
       '<label class="checkzeile"><input type="checkbox" data-aktion="ki-text-an"' + (ki.an ? " checked" : "") + "><span>KI-Text in die Präsentation aufnehmen</span></label>" +
       '<div class="feld"><label for="ki-text">Text (bearbeitbar)</label><textarea id="ki-text" data-bereich="kitext">' + esc(ki.text) + "</textarea>" +
-      '<div class="hilfe">Erscheint im PDF nur, wenn du ihn geprüft hast, mit dem Hinweis „KI-generiert, vom Nutzer geprüft“.</div></div>' +
+      '<div class="hilfe">Erscheint im PDF nur, wenn du ihn geprüft hast, mit dem Hinweis „KI-generiert, vom Nutzer geprüft“. Die Zahlen im Text prüft die App nicht – vergleiche sie mit der Vorschau.</div></div>' +
       '<label class="checkzeile"><input type="checkbox" data-aktion="ki-text-geprueft"' + (ki.geprueft ? " checked" : "") + "><span>Ich habe den Text geprüft</span></label>" +
-      '<button class="btn" data-aktion="ki-text-vorschlag">Vorschlag erzeugen <span class="badge demo">Demo</span></button></div>' +
-      '<div class="btn-reihe"><button class="btn primaer" data-aktion="pdf">PDF erstellen</button><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button></div>';
+      '<button class="btn" data-aktion="ki-text-vorschlag">Vorschlag erzeugen <span class="badge demo">Demo</span></button></div>';
+    var rechts = '<h3 class="gruppen-titel" style="margin-top:0">Vorschau Seite 1</h3>' + vorschauSeite1(erg, entwurf);
+    return '<div class="mit-panel drei"><section>' + links + '</section><aside class="panel immer">' + rechts + '</aside><div class="aktionen"><div class="btn-reihe"><button class="btn primaer" data-aktion="pdf">' + (entwurf ? "Entwurf als PDF erstellen" : "PDF erstellen") + '</button><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button></div></div></div>';
   };
 
   function speicherOrt() { return IFP.objekte.modus === "supabase" ? "Supabase (Region EU, Frankfurt) mit anonymer Kennung" : "nur auf diesem Gerät"; }

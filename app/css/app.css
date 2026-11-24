@@ -251,3 +251,18 @@ dialog .d-fuss { padding: 0 1.25rem 1.25rem; display: flex; flex-wrap: wrap; gap
 .leg-flaeche { height: 10px !important; background: var(--gold); opacity: .25; }
 table.verlauf th[scope="row"] { position: sticky; left: 0; background: var(--bg); }
 table.verlauf td, table.verlauf th { white-space: nowrap; }
+.kapitel { padding-left: 1.25rem; margin: 0; }
+.kapitel li { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .35rem 0; border-bottom: 1px solid var(--linie); flex-wrap: wrap; }
+.badge.ok { background: #E8F3EA; color: #1E6B34; border: 1px solid #9CC8A6; }
+.hinweis.ok { border-color: #9CC8A6; background: #F1F8F2; }
+.seite-vorschau { position: relative; overflow: hidden; background: #fff; border: 1px solid var(--linie); border-radius: 6px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,.08); font-size: .875rem; }
+.seite-vorschau h3 { margin: .5rem 0 0; }
+.sv-kopf { display: flex; justify-content: space-between; align-items: center; gap: .5rem; border-bottom: 2px solid var(--gold); padding-bottom: .4rem; font-size: .75rem; color: var(--text-2); }
+.sv-kopf img { height: 22px; }
+.sv-zahlen { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .6rem; }
+.sv-zahlen div { background: var(--flaeche); border-radius: 6px; padding: .35rem .5rem; font-size: .75rem; }
+.sv-zahlen b { display: block; font-size: 1rem; white-space: nowrap; }
+.sv-ampeln { list-style: none; padding: 0; margin: 0; }
+.sv-ampeln li { display: flex; justify-content: space-between; gap: .5rem; padding: .2rem 0; border-bottom: 1px dotted var(--linie); font-size: .8125rem; }
+.sv-ampeln .ampel { font-size: .75rem; padding: 0 .4rem; }
+.entwurf-stempel { position: absolute; top: 38%; left: -10%; right: -10%; text-align: center; transform: rotate(-24deg); font-size: 4rem; font-weight: 800; color: rgba(168,132,31,.16); letter-spacing: .1em; pointer-events: none; text-transform: uppercase; }
