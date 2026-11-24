@@ -266,3 +266,5 @@ table.verlauf td, table.verlauf th { white-space: nowrap; }
 .sv-ampeln li { display: flex; justify-content: space-between; gap: .5rem; padding: .2rem 0; border-bottom: 1px dotted var(--linie); font-size: .8125rem; }
 .sv-ampeln .ampel { font-size: .75rem; padding: 0 .4rem; }
 .entwurf-stempel { position: absolute; top: 38%; left: -10%; right: -10%; text-align: center; transform: rotate(-24deg); font-size: 4rem; font-weight: 800; color: rgba(168,132,31,.16); letter-spacing: .1em; pointer-events: none; text-transform: uppercase; }
+.fortschritt { height: 10px; background: var(--linie); border-radius: 999px; overflow: hidden; margin-top: .5rem; }
+.fortschritt span { display: block; height: 100%; background: var(--gold); }

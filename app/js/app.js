@@ -288,7 +288,8 @@
     var s = Z.objekt.unterlagen, fs = Z.objekt.fundstellenUnterlagen || {};
     var txt = { enthalten: "im Exposé enthalten", erwaehnt: "erwähnt, nicht beigefügt", fehlt: "fehlt", liegtvor: "liegt vor (von dir bestätigt)" };
     return IFP.UNTERLAGEN.map(function (g, gi) {
-      return '<details class="gruppe"' + (gi < 2 || !mitStatus ? " open" : "") + "><summary>" + g.gruppe + " · " + esc(g.titel) + (g.ki ? "" : ' <span class="badge korrigiert">geht nicht an die KI</span>') + '</summary><div class="posten">' +
+      var nG = g.posten.filter(function (p) { return !p.optional; }).length, dG = g.posten.filter(function (p) { return !p.optional && s[p.id] === "liegtvor"; }).length;
+      return '<details class="gruppe"' + (gi < 2 || !mitStatus ? " open" : "") + "><summary>" + g.gruppe + " · " + esc(g.titel) + ' <span class="klein zweit">(' + dG + "/" + nG + " liegen vor)</span>" + (g.ki ? "" : ' <span class="badge korrigiert">geht nicht an die KI</span>') + '</summary><div class="posten">' +
         g.posten.map(function (p) {
           var st = s[p.id] || "fehlt";
           return '<div class="posten-zeile"><label class="checkzeile"><input type="checkbox" data-aktion="unterlage" data-id="' + p.id + '"' + (st === "liegtvor" ? " checked" : "") + '><span><b>' + esc(p.name) + "</b>" +
@@ -299,7 +300,13 @@
     }).join("");
   }
   V.unterlagen = function () {
-    return "<h2>Alle Unterlagen für Kauf und Finanzierung</h2><p>Diese Übersicht gilt für jedes Objekt – auch ohne Exposé. Erhaltene Unterlagen kannst du abhaken; der Stand wird mit dem Objekt gespeichert.</p>" + unterlagenListe(false);
+    var st = Z.objekt.unterlagen || {}, ges = 0, da = 0;
+    IFP.UNTERLAGEN.forEach(function (g) { g.posten.forEach(function (p) { if (p.optional) return; ges++; if (st[p.id] === "liegtvor") da++; }); });
+    var pz = ges ? Math.round(da / ges * 100) : 0;
+    return "<h2>Alle Unterlagen für Kauf und Finanzierung</h2><p>Diese Übersicht gilt für jedes Objekt – auch ohne Exposé. Erhaltene Unterlagen kannst du abhaken; der Stand wird mit dem Objekt gespeichert.</p>" +
+      '<div class="karte flach"><div class="objekt-zeile"><b style="flex:1">' + da + " von " + ges + ' Unterlagen liegen vor</b><span class="klein zweit">ohne „falls zutreffend“</span></div>' +
+      '<div class="fortschritt" role="progressbar" aria-valuemin="0" aria-valuemax="' + ges + '" aria-valuenow="' + da + '" aria-label="Unterlagen vorhanden"><span style="width:' + pz + '%"></span></div>' +
+      '<p class="klein zweit" style="margin:.5rem 0 0">Gruppe E (persönliche Unterlagen) brauchst du nur für die Bank – sie gehen nie an die KI.</p></div>' + unterlagenListe(false);
   };
 
   function eingabeFeld(id, label, wert, einheit, hilfe, fehler, bereich) {
@@ -616,10 +623,20 @@
 
   V.einstellungen = function () {
     var a = Z.einstellungen.annahmen, s = Z.einstellungen.schwellen;
-    var ann = Object.keys(IFP.ANNAHMEN_STANDARD).map(function (k) {
+    var feld = function (k) {
       var d = IFP.ANNAHMEN_STANDARD[k], wert = IFP.istZahl(a[k]) ? a[k] : d.wert, eigen = IFP.istZahl(a[k]) && a[k] !== d.wert;
       var std = d.einheit === "%" ? proz(d.wert, 1) : d.einheit === "€" ? euro(d.wert, 0) : zahl(d.wert, 1);
       return eingabeFeld(k, esc(d.label) + (eigen ? ' <span class="badge annahme">eigene Einstellung</span>' : ""), wert, d.einheit === "x" ? "Faktor" : d.einheit, esc(d.erklaerung) + " Standard: " + std + ".", null, "annahme");
+    };
+    var gruppen = [
+      ["Kaufnebenkosten und Bank", "Notar, Beleihungswert, Mietausfall, Stresstest", ["NOT", "SA", "MAW", "ZUSCHLAG_ANSCHLUSS"]],
+      ["Prognosen und Ziel", "Wert- und Mietsteigerung, Zielrendite", ["WS", "MS", "ZR"]],
+      ["Haushaltsrechnung (freiwillig)", "Mietanrechnung und Lebenshaltung", ["MA", "LHP1", "LHP2", "LHPK"]],
+      ["Beleihungswert – zweite Sicht", "Ausstattungsfaktoren", ["AF_EINFACH", "AF_MITTEL", "AF_GUT"]]
+    ];
+    var ann = gruppen.map(function (g, i) {
+      var nEigen = g[2].filter(function (k) { return IFP.istZahl(a[k]) && a[k] !== IFP.ANNAHMEN_STANDARD[k].wert; }).length;
+      return '<details class="gruppe"' + (i === 0 ? " open" : "") + "><summary>" + esc(g[0]) + ' <span class="klein zweit">· ' + esc(g[1]) + "</span>" + (nEigen ? ' <span class="badge annahme">' + nEigen + " geändert</span>" : "") + '</summary><div class="posten"><div class="raster-2">' + g[2].map(feld).join("") + "</div></div></details>";
     }).join("");
     var sch = ["LTV_BANK", "DSCR", "BMR", "CF", "KPF"].map(function (k) {
       var d = IFP.SCHWELLEN_STANDARD[k], e = s[k] || {}, ein = d.einheit === "%" ? "%" : d.einheit === "€" ? "€" : "Wert";
@@ -627,8 +644,8 @@
         eingabeFeld("s-" + k + "-gruen", "Grenze gut", IFP.istZahl(e.gruen) ? e.gruen : d.gruen, ein, "Standard: " + (d.einheit === "%" ? proz(d.gruen, 1) : zahl(d.gruen, 2)), null, "schwelle") +
         eingabeFeld("s-" + k + "-gelb", "Grenze kritisch", IFP.istZahl(e.gelb) ? e.gelb : d.gelb, ein, "Standard: " + (d.einheit === "%" ? proz(d.gelb, 1) : zahl(d.gelb, 2)), null, "schwelle") + "</div></fieldset>";
     }).join("");
-    return "<h2>Bank-Annahmen</h2><p>Alle Werte sind einstellbare Modellannahmen, keine verbindlichen Bankwerte. Frag deine Bank nach ihren Werten.</p><div class=\"karte\"><div class=\"raster-2\">" + ann + "</div></div>" +
-      "<h2>Ampel-Schwellen</h2><p class=\"klein\">Geänderte Schwellen werden in der Auswertung als „eigene Einstellung“ neben dem Standard gezeigt.</p>" + sch +
+    return "<h2>Bank-Annahmen</h2><p>Alle Werte sind einstellbare Modellannahmen, keine verbindlichen Bankwerte. Frag deine Bank nach ihren Werten.</p>" + ann +
+      '<h2 style="margin-top:1.5rem">Ampel-Schwellen</h2><p class="klein">Geänderte Schwellen werden in der Auswertung als „eigene Einstellung“ neben dem Standard gezeigt.</p><details class="gruppe"><summary>Schwellen der 5 Pflichtprüfungen mit Zahlenwert</summary><div class="posten">' + sch + "</div></details>" +
       '<div class="btn-reihe"><button class="btn" data-aktion="annahmen-reset">Alles auf Standard zurücksetzen</button></div>' +
       '<h2 style="margin-top:2rem">Darstellung</h2><div class="karte"><fieldset style="border:0;padding:0"><legend class="sr-only">Darstellung</legend>' +
       [["hell", "Hell (Standard)"], ["dunkel", "Dunkel"], ["system", "Wie im System"]].map(function (t) { return '<label class="option"><input type="radio" name="theme" data-aktion="theme" value="' + t[0] + '"' + (Z.einstellungen.theme === t[0] ? " checked" : "") + ">" + t[1] + "</label>"; }).join("") +
@@ -651,7 +668,7 @@
       "<p><b>Betreiber / Impressum:</b> <span class=\"badge fehlt\">Angaben offen</span> – vollständige Anbieterangaben werden vor einer Veröffentlichung ergänzt.</p>" +
       "<p><b>Was die App nicht ist:</b> keine Finanz-, Steuer- oder Rechtsberatung · keine Darlehensvermittlung · verkauft nichts · verdient nicht an Finanzierungen.</p></div>" +
       '<h2>Datenfluss</h2><div class="datenfluss"><div class="box"><b>1 · Dein Gerät</b><br><span class="klein">PDF wird hier in Text umgewandelt</span></div><div class="box"><b>2 · Make</b><br><span class="klein">leitet nur den Exposé-Text weiter</span></div><div class="box"><b>3 · KI-Dienst (Gemini)</b><br><span class="klein">liest Angaben aus, rechnet nie</span></div><div class="box lokal"><b>Bleibt auf dem Gerät</b><br><span class="klein">Einkommen, Haushalt, Alter, Profil, Fotos</span></div></div>' +
-      '<div class="karte" style="margin-top:1rem"><h3>Speicherung</h3><ul><li>Entwurf und Einstellungen: im Browser dieses Geräts.</li><li>„Meine Objekte“: in <b>Supabase (Region EU, Frankfurt)</b> unter einer anonymen Kennung ohne Login – nur Objekt- und Finanzierungsdaten. Jede Kennung sieht nur ihre eigenen Objekte. Löschen jederzeit unter „Meine Daten“.</li><li>Exposé-Text: wird nicht dauerhaft gespeichert. Während der Testphase kann er im Make-Ausführungsprotokoll stehen; diese Protokolle werden danach gelöscht.</li><li>Datenregeln des KI-Dienstes: <b>werden vor der Live-Anbindung geprüft und hier eingetragen.</b></li></ul><p><a href="#daten">Daten exportieren oder löschen</a></p></div>' +
+      '<div class="karte" style="margin-top:1rem"><h3>Speicherung</h3><ul><li>Entwurf und Einstellungen: im Browser dieses Geräts.</li><li>„Meine Objekte“: in <b>Supabase (Region EU, Frankfurt)</b> unter einer anonymen Kennung ohne Login – nur Objekt- und Finanzierungsdaten. Jede Kennung sieht nur ihre eigenen Objekte. Löschen jederzeit unter „Meine Daten“.</li><li>Exposé-Text: wird nicht dauerhaft gespeichert. Während der Testphase kann er im Make-Ausführungsprotokoll stehen; diese Protokolle werden danach gelöscht.</li><li>KI-Dienst: geplant ist Google Gemini über Make. <b>Im kostenlosen Tarif darf Google Eingaben zur Verbesserung seiner Dienste nutzen und von Menschen prüfen lassen.</b> Deshalb geht nur der Exposé-Text an die KI, den du vorher sehen und kürzen kannst – nie Einkommen, Haushalt, Alter, Profil oder Fotos. Im Prototyp ist die Live-KI noch nicht angeschlossen (Demo-Modus).</li><li>Rechenregeln: Formel-Spezifikation ' + IFP.SPEZ + ' – alle Werte rechnet die App selbst.</li></ul><p><a href="#daten">Daten exportieren oder löschen</a></p></div>' +
       '<div class="karte"><h3>Was die KI tut – und was nicht</h3><ul><li>Liest Angaben aus dem Exposé und zeigt die Fundstelle im Originalwortlaut.</li><li>Zeigt fehlende Unterlagen und Widersprüche.</li><li>Erklärt berechnete Kennzahlen und schlägt bearbeitbare Texte vor.</li><li><b>Rechnet nie</b>, erfindet keine fehlenden Werte, Vergleichspreise oder Fundstellen.</li></ul><p class="klein">KI-Inhalte sind gekennzeichnet. Diese Kennzeichnung ist eine Produktentscheidung und keine Bestätigung rechtlicher Konformität.</p></div>' +
       '<div class="karte flach"><h3>Haftung</h3><p class="klein">Alle Berechnungen beruhen auf deinen Eingaben und vereinfachten Modellannahmen. Keine Gewähr für Richtigkeit oder Bankzusagen.</p></div>';
   };
