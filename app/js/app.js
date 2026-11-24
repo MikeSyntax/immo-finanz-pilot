@@ -481,26 +481,46 @@
 
   function diagramm(verlauf) {
     if (!verlauf) return "";
-    var max = Math.max.apply(null, verlauf.map(function (z) { return Math.max(z.wert, z.restschuld); })) * 1.05;
-    var W = 640, H = 260, L = 70, B = 30, T = 10, R = 10;
-    var x = function (j) { return L + (j - 1) * (W - L - R) / 9; }, y = function (v) { return T + (H - T - B) * (1 - v / max); };
-    var linie = function (key) { return verlauf.map(function (z, i) { return (i ? "L" : "M") + x(z.jahr).toFixed(1) + " " + y(z[key]).toFixed(1); }).join(" "); };
-    var achse = [0, 0.25, 0.5, 0.75, 1].map(function (f) { var v = max * f; return '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--linie)"/><text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="11" fill="var(--text-2)">' + zahl(v / 1000, 0) + " T€</text>"; }).join("");
-    var jahre = verlauf.map(function (z) { return '<text x="' + x(z.jahr) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="var(--text-2)">' + z.jahr + "</text>"; }).join("");
-    return '<figure style="margin:0"><svg class="diagramm" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Diagramm: Prognosewert und Restschuld über 10 Jahre">' + achse + jahre +
+    var haupt = document.getElementById("inhalt") || document.querySelector("main");
+    var W = Math.round(Math.min(760, Math.max(300, ((haupt && haupt.clientWidth) || 640) - 48))), H = W < 500 ? 240 : 300;
+    var maxV = Math.max.apply(null, verlauf.map(function (z) { return Math.max(z.wert, z.restschuld); }));
+    var minV = Math.min.apply(null, verlauf.map(function (z) { return Math.min(z.wert, z.restschuld); }));
+    var roh = (maxV - minV) * 1.1 / 4, p10 = Math.pow(10, Math.floor(Math.log10(Math.max(roh, 1))));
+    var schritt = [1, 2, 2.5, 5, 10].map(function (f) { return f * p10; }).filter(function (v) { return v >= roh; })[0];
+    var lo = Math.max(0, Math.floor(minV / schritt) * schritt), hi = lo + schritt * 4;
+    while (hi < maxV) hi += schritt;
+    var ticks = []; for (var tv = lo; tv <= hi + 1e-6; tv += schritt) ticks.push(tv);
+    var L = W < 500 ? 52 : 64, B = 28, T = 12, R = 12;
+    var x = function (j) { return L + (j - 1) * (W - L - R) / 9; }, y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
+    var pkt = function (key) { return verlauf.map(function (z) { return x(z.jahr).toFixed(1) + " " + y(z[key]).toFixed(1); }); };
+    var linie = function (key) { return "M" + pkt(key).join(" L"); };
+    var flaeche = "M" + pkt("wert").join(" L") + " L" + pkt("restschuld").reverse().join(" L") + " Z";
+    var achse = ticks.map(function (v) { return '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '" stroke="var(--linie)"/><text x="' + (L - 6) + '" y="' + (y(v) + 4).toFixed(1) + '" text-anchor="end" font-size="12" fill="var(--text-2)">' + zahl(v / 1000, 0) + " T€</text>"; }).join("");
+    var jahre = verlauf.map(function (z) { return (W < 500 && [1, 3, 5, 7, 10].indexOf(z.jahr) < 0) ? "" : '<text x="' + x(z.jahr).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="12" fill="var(--text-2)">' + z.jahr + "</text>"; }).join("");
+    var letzt = verlauf[verlauf.length - 1];
+    return '<figure style="margin:0"><svg class="diagramm" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Diagramm: Prognosewert steigt von ' + euro(verlauf[0].wert, 0) + " auf " + euro(letzt.wert, 0) + ", Restschuld sinkt von " + euro(verlauf[0].restschuld, 0) + " auf " + euro(letzt.restschuld, 0) + '.">' + achse +
+      '<path d="' + flaeche + '" fill="var(--gold)" fill-opacity=".12"/>' + jahre +
       '<path d="' + linie("wert") + '" fill="none" stroke="var(--gold)" stroke-width="3"/><path d="' + linie("restschuld") + '" fill="none" stroke="var(--text)" stroke-width="3" stroke-dasharray="6 4"/></svg>' +
-      '<figcaption class="klein"><span style="color:var(--gold)">━</span> Prognosewert (Annahme ' + proz(IFP.annahmenFlach(Z.einstellungen.annahmen).WS, 1) + " p. a.) · ┅ Restschuld · Jahre 1–10</figcaption></figure>";
+      '<figcaption class="klein legende"><span><i class="leg-gold"></i>Prognosewert</span><span><i class="leg-strich"></i>Restschuld</span><span><i class="leg-flaeche"></i>Dein Anteil am Objekt (Wert − Restschuld)</span><span class="zweit">Jahre 1–10, Achse beginnt nicht bei 0</span></figcaption></figure>';
   }
   V.entwicklung = function () {
-    var erg = IFP.ergebnis(), w = erg.werte;
+    var erg = IFP.ergebnis(), w = erg.werte, a = IFP.annahmenFlach(Z.einstellungen.annahmen);
     if (!w.verlauf) return '<div class="hinweis">Für die 10-Jahres-Entwicklung fehlen noch Angaben (Kaufpreis, Finanzierung). <a href="#finanzierung">Zur Finanzierung</a></div>';
-    var b = w.bruecke;
-    return "<h2>10-Jahres-Entwicklung</h2><p class=\"klein\">Miete und Wert sind <b>Prognosen</b> (Annahmen, einstellbar). Restschuld und Tilgung folgen aus dem Darlehensvertrag bei gleichem Zins.</p>" +
-      '<div class="karte">' + diagramm(w.verlauf) + "</div>" +
-      '<div class="karte tabelle-wrap"><table><caption class="sr-only">Jahresverlauf</caption><thead><tr><th>Jahr</th><th class="zahl">Jahresmiete (Prognose)</th><th class="zahl">Restschuld</th><th class="zahl">getilgt</th><th class="zahl">Wert (Prognose)</th><th class="zahl">Cashflow</th><th class="zahl">kumuliert</th></tr></thead><tbody>' +
-      w.verlauf.map(function (z) { return "<tr><td>" + z.jahr + '</td><td class="zahl">' + euro(z.miete) + '</td><td class="zahl">' + euro(z.restschuld) + '</td><td class="zahl">' + euro(z.getilgt) + '</td><td class="zahl">' + euro(z.wert) + '</td><td class="zahl">' + euro(z.cf) + '</td><td class="zahl">' + euro(z.cfKum) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
-      (b ? '<div class="karte flach"><h3>Vermögensbrücke nach 10 Jahren</h3><pre class="rechenweg">' + esc(
-        "Wertsteigerung (Prognose)     " + euro(b.wert) + "\n+ Tilgung                     " + euro(b.tilgung) + "\n+ Summe Cashflow 10 Jahre     " + euro(b.cf) + "\n− Kaufnebenkosten             " + euro(-b.nebenkosten) + "\n− Renovierung                 " + euro(-b.renovierung) + "\n= Vermögenszuwachs            " + euro(w.VZ_10)) + '</pre><p class="klein zweit">Ohne Steuern. Steuerfreiheit des Veräußerungsgewinns nach 10 Jahren (§ 23 EStG) nach heutigem Stand – keine Steuerberatung.</p></div>' : "");
+    var b = w.bruecke, letzt = w.verlauf[w.verlauf.length - 1];
+    var hgAnnahme = Z.objekt.felder.HG_nu && Z.objekt.felder.HG_nu.zustand === "annahme";
+    var kopf = "<h2>10-Jahres-Entwicklung</h2>" + '<p class="klein"><span class="badge annahme">Prognose</span> Wertsteigerung ' + proz(a.WS, 1) + " und Mietsteigerung " + proz(a.MS, 1) + " pro Jahr, Hausgeld bleibt gleich" +
+      (hgAnnahme ? ", nicht umlagefähiges Hausgeld ist geschätzt" : "") + '. Restschuld und Tilgung folgen aus dem Darlehen bei gleichem Zins. <a href="#einstellungen">Annahmen ändern</a></p>';
+    var kpi = '<div class="hero"><div class="grosse-zahlen">' +
+      "<div>Vermögenszuwachs nach 10 J.<b>" + euro(w.VZ_10, 0) + "</b></div><div>Restschuld nach 10 J.<b>" + euro(letzt.restschuld, 0) + "</b></div>" +
+      "<div>Summe Cashflow 10 J.<b>" + euro(letzt.cfKum, 0) + "</b></div><div>Dein Anteil nach 10 J.<b>" + euro(letzt.wert - letzt.restschuld, 0) + "</b></div></div></div>";
+    var tabelle = '<div class="karte"><h3>Jahr für Jahr</h3><p class="klein zweit nur-mobil">Tabelle seitlich wischen für alle Spalten.</p><div class="tabelle-wrap" tabindex="0" role="region" aria-label="Jahresverlauf, seitlich scrollbar"><table class="verlauf"><caption class="sr-only">Jahresverlauf</caption><thead><tr><th scope="col">Jahr</th><th class="zahl" scope="col">Jahresmiete (Prognose)</th><th class="zahl" scope="col">Restschuld</th><th class="zahl" scope="col">getilgt</th><th class="zahl" scope="col">Wert (Prognose)</th><th class="zahl" scope="col">Cashflow</th><th class="zahl" scope="col">kumuliert</th></tr></thead><tbody>' +
+      w.verlauf.map(function (z) { return '<tr><th scope="row">' + z.jahr + '</th><td class="zahl">' + euro(z.miete, 0) + '</td><td class="zahl">' + euro(z.restschuld, 0) + '</td><td class="zahl">' + euro(z.getilgt, 0) + '</td><td class="zahl">' + euro(z.wert, 0) + '</td><td class="zahl">' + euro(z.cf, 0) + '</td><td class="zahl">' + euro(z.cfKum, 0) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
+      '<p class="klein zweit">Auf volle Euro gerundet. Genaue Werte stehen in der Präsentation für die Bank.</p></div>';
+    var bruecke = b ? '<div class="karte flach"><h3>Vermögensbrücke: Woraus setzt sich der Zuwachs zusammen?</h3>' + rechenTabelle([
+      ["", "Wertsteigerung " + '<span class="badge annahme">Prognose</span>', euro(b.wert)], ["+", "Getilgter Kredit", euro(b.tilgung)], [b.cf < 0 ? "−" : "+", "Summe Cashflow 10 Jahre " + (b.cf < 0 ? "(Zuzahlung)" : ""), euro(Math.abs(b.cf))],
+      ["−", "Kaufnebenkosten", euro(-b.nebenkosten)], ["−", "Renovierung", euro(-b.renovierung)], ["=", "Vermögenszuwachs", euro(w.VZ_10), true]], "Vermögensbrücke") +
+      '<p class="klein zweit">Ohne Steuern. Steuerfreiheit des Verkaufsgewinns nach 10 Jahren (§ 23 EStG) nach heutigem Stand – keine Steuerberatung.</p></div>' : "";
+    return kopf + kpi + '<div class="karte">' + diagramm(w.verlauf) + "</div>" + tabelle + bruecke;
   };
 
   V.markt = function () {
