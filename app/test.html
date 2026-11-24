@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>Rechentest – Immo Finanz Pilot</title><link rel="stylesheet" href="css/app.css"></head>
+<body><main class="inhalt"><h1>Automatischer Rechentest</h1><p>Prüft den Rechenkern gegen die Sollwerte aus 03_Formel-Spezifikation v0.3 (T1, T3, Sonderfälle). Toleranz ±1 € bzw. ±0,01 Prozentpunkte. <b>T2 (eigene Finanzierung) fehlt noch und gilt nicht als bestanden.</b></p>
+<div id="ergebnis" class="karte"></div><div class="tabelle-wrap"><table id="tab"><thead><tr><th>Fall</th><th>Prüfung</th><th class="zahl">Soll</th><th class="zahl">Ist</th><th>Ergebnis</th></tr></thead><tbody></tbody></table></div></main>
+<script src="js/parameter.js"></script><script src="js/rechner.js"></script><script src="js/inhalte.js"></script><script src="js/expose.js"></script><script src="js/tests.js"></script>
+<script>
+var e = IFP.tests.ausfuehren(), f = e.filter(function (x) { return !x.ok; });
+document.getElementById("ergebnis").innerHTML = '<h2>' + (f.length ? '✕ ' + f.length + ' von ' + e.length + ' Prüfungen fehlgeschlagen' : '✓ Alle ' + e.length + ' Prüfungen bestanden') + '</h2><p class="klein">Ausgeführt: ' + new Date().toLocaleString("de-DE") + ' · T2: nicht vorhanden (offen)</p>';
+document.querySelector("#tab tbody").innerHTML = e.map(function (x) { var fmt = function (v) { return typeof v === "number" ? v.toLocaleString("de-DE", { maximumFractionDigits: 4 }) : String(v); };
+  return "<tr><td>" + x.fall + "</td><td>" + x.pruefung + '</td><td class="zahl">' + fmt(x.soll) + '</td><td class="zahl">' + fmt(x.ist) + "</td><td>" + (x.ok ? '<span class="ampel gruen">✓ ok</span>' : '<span class="ampel rot">✕ Abweichung</span>') + "</td></tr>"; }).join("");
+</script></body></html>

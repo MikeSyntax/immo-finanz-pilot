@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="hell">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Immo Finanz Pilot</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<a class="sr-only" href="#inhalt">Zum Inhalt springen</a>
+<div class="demo-banner" id="demo-banner" role="note">Demo-Modus – keine echte KI-Verarbeitung. Das Beispiel-Exposé ist fiktiv.</div>
+<div class="app">
+  <nav class="seitenleiste" aria-label="Hauptnavigation">
+    <a href="#start" style="padding:0;min-height:0"><img class="logo" src="assets/logo-hell.svg" alt="Immo Finanz Pilot – Startseite"></a>
+    <div id="seitenleiste-nav"></div>
+    <div class="unten">Vermittelt nichts · verkauft nichts<br>KI rechnet nie · keine Finanzberatung</div>
+  </nav>
+  <div class="haupt">
+    <header class="kopf">
+      <button class="icon-btn" id="zurueck" aria-label="Zurück" hidden>←</button>
+      <a href="#start"><img class="logo-mobil" src="assets/app-icon.svg" alt="Startseite"></a>
+      <h1 id="kopf-titel">Immo Finanz Pilot</h1>
+      <a class="icon-btn" href="#hilfe" aria-label="Hilfe" style="text-decoration:none">?</a>
+    </header>
+    <nav class="stepper" id="stepper" aria-label="Schritte" hidden></nav>
+    <main class="inhalt" id="inhalt" tabindex="-1"></main>
+    <footer class="fuss">
+      <a href="#transparenz">Über die App &amp; Impressum</a><a href="#transparenz">Datenschutz &amp; Datenfluss</a><a href="#hilfe">Hilfe</a><a href="#daten">Meine Daten</a>
+      <span>Prototyp · keine Finanzberatung</span>
+    </footer>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Navigation"></nav>
+<dialog id="dialog"></dialog>
+<script src="js/parameter.js"></script>
+<script src="js/konfig.js"></script>
+<script src="js/rechner.js"></script>
+<script src="js/inhalte.js"></script>
+<script src="js/expose.js"></script>
+<script src="js/zustand.js"></script>
+<script src="js/speicher.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
