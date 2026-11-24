@@ -24,7 +24,7 @@
   --schrift: "Manrope", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
-/* Dark-Mode: Variablen vorbereitet, Ausarbeitung nach dem Pflicht-Ablauf (E9) */
+/* Dark-Mode (E9): nur Variablen tauschen. Kontraste auf --bg geprüft (Text ≥ 7:1, Gold-Text ≥ 4,5:1). */
 :root[data-theme="dunkel"] {
   --bg: #0F0F12; --flaeche: #18181D; --flaeche-2: #212128; --text: #F2EEE3; --text-2: #C9C3B5;
   --linie: #3A3833; --gold: #D4AF37; --gold-text: #E0C060; --primaer: #E0C060; --primaer-text: #111111; --fokus: #E0C060;
@@ -117,7 +117,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--fokus); outline:
 .pfeld.fehlt { border-style: dashed; }
 .pfeld[aria-pressed="true"] { outline: 3px solid var(--gold); }
 .zitat { border-left: 4px solid var(--gold); background: var(--flaeche); padding: .5rem .75rem; border-radius: 0 8px 8px 0; margin: .5rem 0; }
-.zitat mark { background: #FFE38A; color: #1A1A1A; padding: 0 2px; }
+.zitat mark { background: #FFE38A; color: #1A1A1A; padding: 0 2px; border-radius: 2px; }
 .option { display: flex; gap: .75rem; align-items: center; border: 2px solid var(--linie); border-radius: 10px; padding: .5rem .75rem; min-height: 52px; margin-bottom: .5rem; cursor: pointer; }
 .option input { width: 22px; height: 22px; }
 
@@ -253,8 +253,8 @@ table.verlauf th[scope="row"] { position: sticky; left: 0; background: var(--bg)
 table.verlauf td, table.verlauf th { white-space: nowrap; }
 .kapitel { padding-left: 1.25rem; margin: 0; }
 .kapitel li { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .35rem 0; border-bottom: 1px solid var(--linie); flex-wrap: wrap; }
-.badge.ok { background: #E8F3EA; color: #1E6B34; border: 1px solid #9CC8A6; }
-.hinweis.ok { border-color: #9CC8A6; background: #F1F8F2; }
+.badge.ok { background: var(--gruen-bg); color: var(--gruen); border: 1px solid var(--gruen); }
+.hinweis.ok { border-color: var(--gruen); background: var(--gruen-bg); }
 .seite-vorschau { position: relative; overflow: hidden; background: #fff; border: 1px solid var(--linie); border-radius: 6px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,.08); font-size: .875rem; }
 .seite-vorschau h3 { margin: .5rem 0 0; }
 .sv-kopf { display: flex; justify-content: space-between; align-items: center; gap: .5rem; border-bottom: 2px solid var(--gold); padding-bottom: .4rem; font-size: .75rem; color: var(--text-2); }
@@ -268,3 +268,12 @@ table.verlauf td, table.verlauf th { white-space: nowrap; }
 .entwurf-stempel { position: absolute; top: 38%; left: -10%; right: -10%; text-align: center; transform: rotate(-24deg); font-size: 4rem; font-weight: 800; color: rgba(168,132,31,.16); letter-spacing: .1em; pointer-events: none; text-transform: uppercase; }
 .fortschritt { height: 10px; background: var(--linie); border-radius: 999px; overflow: hidden; margin-top: .5rem; }
 .fortschritt span { display: block; height: 100%; background: var(--gold); }
+
+/* Logo je Farbschema */
+.nur-dunkel { display: none !important; }
+:root[data-theme="dunkel"] .nur-hell { display: none !important; }
+:root[data-theme="dunkel"] .nur-dunkel { display: inline-block !important; }
+:root[data-theme="dunkel"] { color-scheme: dark; }
+/* Vorschau der Bank-Präsentation bleibt immer hell – wie das PDF */
+.seite-vorschau { --bg: #FFFFFF; --flaeche: #FAF7EF; --text: #1A1A1A; --text-2: #4A4A4A; --linie: #D9D3C3; --gold: #A8841F; --gold-text: #8A6D1F;
+  --gruen: #1E6B3A; --gruen-bg: #E6F2EA; --gelb: #7A5A00; --gelb-bg: #FFF4D1; --rot: #A3201A; --rot-bg: #FBE7E5; --grau: #555555; --grau-bg: #EFEFEF; color: var(--text); }

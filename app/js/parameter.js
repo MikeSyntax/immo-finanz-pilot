@@ -3,7 +3,7 @@
    Werte mit "einstellbar: true" kann der Nutzer unter "Bank-Annahmen" ändern (US-09). */
 window.IFP = window.IFP || {};
 
-IFP.VERSION = "0.3.0 (Phase 3)";
+IFP.VERSION = "0.5.0 (PDF + Dunkelmodus)";
 IFP.SPEZ = "03 v0.4";
 
 /* Bank-Annahmen (🔧). Prozentwerte als Dezimalzahl (0.02 = 2 %). */

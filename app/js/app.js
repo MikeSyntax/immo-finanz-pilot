@@ -657,7 +657,7 @@
       '<div class="btn-reihe"><button class="btn" data-aktion="annahmen-reset">Alles auf Standard zurücksetzen</button></div>' +
       '<h2 style="margin-top:2rem">Darstellung</h2><div class="karte"><fieldset style="border:0;padding:0"><legend class="sr-only">Darstellung</legend>' +
       [["hell", "Hell (Standard)"], ["dunkel", "Dunkel"], ["system", "Wie im System"]].map(function (t) { return '<label class="option"><input type="radio" name="theme" data-aktion="theme" value="' + t[0] + '"' + (Z.einstellungen.theme === t[0] ? " checked" : "") + ">" + t[1] + "</label>"; }).join("") +
-      '</fieldset><p class="klein zweit">Der dunkle Modus ist vorbereitet und wird nach dem Pflicht-Ablauf vollständig ausgearbeitet. Die Bank-Präsentation ist immer hell.</p></div>';
+      '</fieldset><p class="klein zweit">„Wie im System“ folgt der Einstellung deines Geräts. Die Bank-Präsentation (Vorschau und PDF) ist immer hell, damit sie gedruckt und von der Bank gut gelesen werden kann.</p></div>';
   };
 
   V.haushalt = function () {
@@ -918,4 +918,5 @@
 
   window.addEventListener("hashchange", render);
   document.addEventListener("DOMContentLoaded", function () { themeAnwenden(); render(); });
+  if (window.matchMedia) { var mq = matchMedia("(prefers-color-scheme: dark)"); var mqf = function () { if (Z.einstellungen.theme === "system") themeAnwenden(); }; if (mq.addEventListener) mq.addEventListener("change", mqf); else if (mq.addListener) mq.addListener(mqf); }
 })();
