@@ -42,3 +42,7 @@ Wenn du in GitHub Desktop „Commit to main“ und „Push origin“ klickst, is
 | `lib/pdfjs/` | PDF-Bibliothek pdf.js 3.11.174 (Apache-2.0), lokal eingebunden |
 | `supabase/` | SQL-Einrichtung und Anleitung |
 | `daten/` | fiktives Beispiel-Exposé zum Testen |
+
+## PDF-Präsentation (Phase 5)
+- Knopf „PDF erstellen“ unter „Präsentation für die Bank“. Das PDF entsteht komplett auf deinem Gerät (Bibliothek jsPDF 2.5.2, MIT-Lizenz, liegt in `lib/jspdf/`), es wird nichts verschickt.
+- Bei offenen Punkten heißt die Datei `…_Entwurf.pdf` und jede Seite trägt das Wasserzeichen „ENTWURF“.

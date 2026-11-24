@@ -420,7 +420,7 @@
   function ampelZusatz(q) {
     if (!q) return "";
     if (q.status === "unvollstaendig") {
-      var namen = q.fehlt.concat(q.annahmen).map(function (f) { var d = IFP.FELDER.filter(function (x) { return x.id === f; })[0]; return d ? d.label : ({ GrESt: "Bundesland", EK: "Eigenkapital", i: "Zins", t: "Tilgung", ZB: "Zinsbindung" }[f] || f); });
+      var namen = q.fehlt.concat(q.annahmen).map(function (f) { var d = IFP.FELDER.filter(function (x) { return x.id === f; })[0]; return d ? (/^davon/.test(d.label) ? "Hausgeld – " : "") + d.label : ({ GrESt: "Bundesland", EK: "Eigenkapital", i: "Zins", t: "Tilgung", ZB: "Zinsbindung" }[f] || f); });
       return (q.wegenAnnahme ? "Annahme: " : "fehlt: ") + namen.join(", ");
     }
     if (q.status === "nichtbewertet") return q.text || "freiwillig – nicht ausgefüllt";
@@ -446,6 +446,20 @@
       '<div class="btn-reihe"><a class="btn link" href="#einstellungen">Schwellen ändern</a><button class="btn" data-aktion="erklaeren" data-id="' + k.id + '">Erklären <span class="badge ki">KI</span></button></div><div id="erkl-' + k.id + '" aria-live="polite"></div></div>';
   }
 
+  /* Stellschrauben „Was müsste sich ändern?“ (03 v0.4, Formeln 36a–d) – gemeinsam für Auswertung und PDF */
+  function stellschrauben(erg) {
+    var w = erg.werte, ex = IFP.eingaben().e, hb = [], sw = IFP.schwellen();
+    var auf = function (v, d) { var f = Math.pow(10, d); return Math.ceil(v * f - 1e-9) / f; }; // „mindestens“ → aufrunden
+    if (IFP.istZahl(w.CF) && w.CF < 0) {
+      if (IFP.istZahl(w.H_KM_CF0)) hb.push(["Kaltmiete für Cashflow 0 €", euro(auf(w.H_KM_CF0, 2)) + " statt " + euro(ex.KM)]);
+      if (IFP.istZahl(w.H_EK_CF0)) hb.push(["oder mehr Eigenkapital für Cashflow 0 €", "+ " + euro(auf(w.H_EK_CF0, 0), 0)]);
+    }
+    if (IFP.istZahl(w.DSCR) && w.DSCR < sw.DSCR.gruen && IFP.istZahl(w.H_KM_DSCR)) hb.push(["Kaltmiete für DSCR " + zahl(sw.DSCR.gruen), euro(auf(w.H_KM_DSCR, 2))]);
+    if (IFP.istZahl(w.H_EK_LTV) && w.H_EK_LTV > 0) hb.push(["Mehr Eigenkapital für Beleihungsauslauf ≤ " + proz(sw.LTV_BANK.gelb, 0), "+ " + euro(auf(w.H_EK_LTV, 0), 0)]);
+    if (IFP.istZahl(w.KP_max) && IFP.istZahl(ex.KP) && w.KP_max < ex.KP) hb.push(["Kaufpreis für " + proz(IFP.annahmenFlach(Z.einstellungen.annahmen).ZR, 0) + " Zielrendite (Verhandlungsziel)", euro(w.KP_max, 0)]);
+    return hb;
+  }
+
   V.auswertung = function () {
     var erg = IFP.ergebnis(), ks = kennzahlen(erg), g = erg.gesamt, z = { gruen: 0, gelb: 0, rot: 0, unvollstaendig: 0 };
     erg.ampeln.forEach(function (q) { if (z[q.status] !== undefined) z[q.status]++; });
@@ -457,15 +471,7 @@
     var istPflicht = function (k) { var d = IFP.SCHWELLEN_STANDARD[k.id]; return d && d.art === "pflicht"; };
     var kacheln = '<h3 class="gruppen-titel">Das prüft die Bank <span class="klein zweit">(fließt ins Gesamturteil ein)</span></h3><div class="kacheln">' + ks.filter(istPflicht).map(kachel).join("") + "</div>" +
       '<h3 class="gruppen-titel">Zusätzlich für dich <span class="klein zweit">(Marktvergleich, freiwillige Angaben)</span></h3><div class="kacheln">' + ks.filter(function (k) { return !istPflicht(k); }).map(kachel).join("") + "</div>";
-    var w = erg.werte, ex = IFP.eingaben().e, hb = [], sw = IFP.schwellen();
-    var auf = function (v, d) { var f = Math.pow(10, d); return Math.ceil(v * f - 1e-9) / f; }; // „mindestens“ → aufrunden
-    if (IFP.istZahl(w.CF) && w.CF < 0) {
-      if (IFP.istZahl(w.H_KM_CF0)) hb.push(["Kaltmiete für Cashflow 0 €", euro(auf(w.H_KM_CF0, 2)) + " statt " + euro(ex.KM)]);
-      if (IFP.istZahl(w.H_EK_CF0)) hb.push(["oder mehr Eigenkapital für Cashflow 0 €", "+ " + euro(auf(w.H_EK_CF0, 0), 0)]);
-    }
-    if (IFP.istZahl(w.DSCR) && w.DSCR < sw.DSCR.gruen && IFP.istZahl(w.H_KM_DSCR)) hb.push(["Kaltmiete für DSCR " + zahl(sw.DSCR.gruen), euro(auf(w.H_KM_DSCR, 2))]);
-    if (IFP.istZahl(w.H_EK_LTV) && w.H_EK_LTV > 0) hb.push(["Mehr Eigenkapital für Beleihungsauslauf ≤ " + proz(sw.LTV_BANK.gelb, 0), "+ " + euro(auf(w.H_EK_LTV, 0), 0)]);
-    if (IFP.istZahl(w.KP_max) && IFP.istZahl(ex.KP) && w.KP_max < ex.KP) hb.push(["Kaufpreis für " + proz(IFP.annahmenFlach(Z.einstellungen.annahmen).ZR, 0) + " Zielrendite (Verhandlungsziel)", euro(w.KP_max, 0)]);
+    var hb = stellschrauben(erg);
     var hebel = hb.length ? '<div class="karte"><h3>Was müsste sich ändern?</h3><p class="klein zweit">Jede Zeile für sich gerechnet, die anderen Werte bleiben gleich. Hilft beim Verhandeln und im Bankgespräch.</p>' +
       rechenTabelle(hb.map(function (h) { return ["", esc(h[0]), h[1]]; }), "Stellschrauben") +
       (Z.objekt.felder.HG_nu && Z.objekt.felder.HG_nu.zustand === "annahme" ? '<p class="klein"><span class="badge annahme">Annahme</span> Gerechnet mit dem geschätzten nicht umlagefähigen Hausgeld.</p>' : "") + "</div>" : "";
@@ -601,6 +607,8 @@
     var rechts = '<h3 class="gruppen-titel" style="margin-top:0">Vorschau Seite 1</h3>' + vorschauSeite1(erg, entwurf);
     return '<div class="mit-panel drei"><section>' + links + '</section><aside class="panel immer">' + rechts + '</aside><div class="aktionen"><div class="btn-reihe"><button class="btn primaer" data-aktion="pdf">' + (entwurf ? "Entwurf als PDF erstellen" : "PDF erstellen") + '</button><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button></div></div></div>';
   };
+
+  IFP.ui = { kennzahlen: kennzahlen, offenePunkte: offenePunkte, stellschrauben: stellschrauben, feldWertText: feldWertText, schwelleText: schwelleText, ampelZusatz: ampelZusatz, lueckenText: lueckenText, euro: euro, zahl: zahl, proz: proz };
 
   function speicherOrt() { return IFP.objekte.modus === "supabase" ? "Supabase (Region EU, Frankfurt) mit anonymer Kennung" : "nur auf diesem Gerät"; }
   V.objekte = function () {
@@ -850,7 +858,12 @@
         kt.text = "[Demo-Vorschlag – keine echte KI] Vermietete 2-Zimmer-Altbauwohnung in " + (o.ort || "–") + ", " + zahl(IFP.eingaben().e.WFL, 1) + " m². Kaufpreis " + euro(IFP.eingaben().e.KP, 0) + ", Darlehen " + euro(w.D, 0) + ", Rate " + euro(w.R) + " pro Monat. Offene Punkte siehe Unterlagen-Checkliste.";
         kt.an = true; kt.geprueft = false; o.kiTexte.zusammenfassung = kt; speichern(); render(); break; }
       case "pdf":
-        dialog("PDF-Erstellung folgt in Phase 5", "<p>Die Gliederung steht. Die lokale PDF-Erstellung (jsPDF, hell, 9 Kapitel) wird im nächsten Bauschritt umgesetzt. Es wurde noch keine Datei erzeugt.</p>", [{ text: "Verstanden", primaer: true }]); break;
+        el.setAttribute("aria-busy", "true"); var altText = el.textContent; el.textContent = "PDF wird erstellt …";
+        IFP.pdf.erstellen().then(function (info) {
+          toast("PDF gespeichert: " + info.datei + " (" + info.seiten + " Seiten)" + (info.entwurf ? " – als Entwurf" : ""));
+        }).catch(function (e) { dialog("PDF konnte nicht erstellt werden", "<p>" + esc(e.message || String(e)) + "</p><p>Es wurde nichts verschickt. Bitte versuche es erneut oder nutze einen anderen Browser.</p>", [{ text: "Schließen", primaer: true }]); })
+          .then(function () { el.removeAttribute("aria-busy"); el.textContent = altText; });
+        break;
       case "annahmen-reset":
         dialog("Auf Standard zurücksetzen?", "<p>Alle eigenen Annahmen und Schwellen werden auf die Standardwerte aus der Formel-Spezifikation gesetzt.</p>", [{ text: "Zurücksetzen", primaer: true, aktion: function () { Z.einstellungen.annahmen = {}; Z.einstellungen.schwellen = {}; speichern(); toast("Standardwerte gelten wieder."); render(); } }, { text: "Abbrechen" }]); break;
       case "export": {
