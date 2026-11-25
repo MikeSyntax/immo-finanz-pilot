@@ -3,81 +3,141 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Impressum &amp; Datenschutz – Immo Finanz Pilot</title>
+<title>Datenschutzerklärung – Immo Finanz Pilot</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <style>
-  :root{--bg:#FFFFFF;--text:#1A1A1A;--gold:#A8841F;--gold-text:#8A6D1F;--muted:#5F5F5F;--linie:#E4E0D6}
-  @media (prefers-color-scheme: dark){:root{--bg:#141416;--text:#F2F2F2;--gold-text:#E0C36A;--muted:#BDBDBD;--linie:#3A3A3E}}
+  :root{--bg:#FFFFFF;--text:#1A1A1A;--gold-text:#8A6D1F;--muted:#5F5F5F;--linie:#E4E0D6;--flaeche:#FAF7EF}
+  @media (prefers-color-scheme: dark){:root{--bg:#141416;--text:#F2F2F2;--gold-text:#E0C36A;--muted:#BDBDBD;--linie:#3A3A3E;--flaeche:#1E1E21}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
   main{max-width:46rem;margin:0 auto;padding:32px 20px 64px}
-  h1{font-size:1.6rem;margin:0 0 .25rem}
-  h2{font-size:1.2rem;margin:2.2rem 0 .5rem;padding-top:1rem;border-top:1px solid var(--linie)}
-  h3{font-size:1rem;margin:1.4rem 0 .3rem}
+  .ueber{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-text);font-weight:700;margin:0}
+  h1{font-size:1.8rem;margin:.2rem 0 .4rem}
+  h2{font-size:1.15rem;margin:0 0 .4rem;display:flex;gap:.6rem;align-items:baseline}
+  h2 .nr{color:var(--gold-text);font-variant-numeric:tabular-nums;min-width:1.6rem}
+  section{padding:1.2rem 0;border-top:1px solid var(--linie)}
   p,li{max-width:42rem}
+  p{margin:.35rem 0}
   a{color:var(--gold-text)}
   a:focus-visible{outline:3px solid var(--text);outline-offset:2px}
   .klein{font-size:.9rem;color:var(--muted)}
-  .kasten{border:1px solid var(--linie);border-radius:10px;padding:12px 16px;margin:1rem 0}
-  nav.oben{margin-bottom:1.5rem}
-  table{border-collapse:collapse;width:100%;font-size:.95rem}
-  th,td{border:1px solid var(--linie);padding:6px 8px;text-align:left;vertical-align:top}
+  .kasten{background:var(--flaeche);border:1px solid var(--linie);border-radius:10px;padding:12px 16px;margin:1rem 0}
+  ol.inhalt{columns:2;column-gap:2rem;padding-left:1.4rem;margin:.5rem 0}
+  @media (max-width:560px){ol.inhalt{columns:1}}
+  nav{margin:1.5rem 0}
+  nav.unten a{margin-right:1rem}
 </style>
 </head>
 <body>
 <main>
-<nav class="oben" aria-label="Zurück"><a href="./">← Startseite</a> · <a href="app/">Zum Prototyp</a></nav>
-<h1>Impressum &amp; Datenschutzerklärung</h1>
-<p class="klein">Immo Finanz Pilot · Stand: 25.11.2026 · App-Version 0.5.1</p>
+<p class="ueber">Immo Finanz Pilot · Datenschutz und Transparenz</p>
+<h1>Datenschutzerklärung</h1>
+<p>Hier erfährst du, welche personenbezogenen Daten bei der Nutzung von Immo Finanz Pilot verarbeitet werden und welche Rechte du hast.</p>
+<p class="klein">Stand: 25. November 2026 · App-Version 0.5.1</p>
 
-<h2 id="impressum">Impressum</h2>
-<p>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</p>
-<p>Mike Reichenbach<br>Werrabronner Straße 8<br>76229 Karlsruhe<br>Deutschland</p>
-<p>E-Mail: <a href="mailto:mike.reichenbach@tn.syntax-institut.de">mike.reichenbach@tn.syntax-institut.de</a></p>
-<p>„Immo Finanz Pilot“ ist ein Prototyp, der im Rahmen der Weiterbildung „KI-Anwendungsspezialist“ (Syntax Institut) entsteht. Der Name ist ein Projektname, keine Firma.</p>
-<p><b>Keine Beratung:</b> Die App bietet keine Finanz-, Steuer- oder Rechtsberatung und vermittelt keine Darlehen. Alle Berechnungen beruhen auf deinen Eingaben und vereinfachten Modellannahmen; es wird keine Gewähr für Richtigkeit oder Bankzusagen übernommen.</p>
+<nav aria-label="Inhaltsverzeichnis">
+<p class="klein" style="margin-bottom:0"><b>Inhalt</b></p>
+<ol class="inhalt">
+  <li><a href="#ueberblick">Datenschutz auf einen Blick</a></li>
+  <li><a href="#verantwortlicher">Verantwortlicher</a></li>
+  <li><a href="#hosting">Hosting und Server-Logs</a></li>
+  <li><a href="#browser">Speicherung in deinem Browser</a></li>
+  <li><a href="#objekte">„Meine Objekte“ (Supabase)</a></li>
+  <li><a href="#ki">KI-Auslesen von Exposés</a></li>
+  <li><a href="#pdf">PDF und Datenexport</a></li>
+  <li><a href="#kontakt">Kontaktaufnahme</a></li>
+  <li><a href="#empfaenger">Empfänger und Drittländer</a></li>
+  <li><a href="#speicherdauer">Speicherdauer</a></li>
+  <li><a href="#entscheidungen">Keine automatisierten Entscheidungen</a></li>
+  <li><a href="#rechte">Deine Rechte</a></li>
+  <li><a href="#aenderungen">Änderungen</a></li>
+</ol>
+</nav>
 
-<h2 id="datenschutz">Datenschutzerklärung</h2>
-<div class="kasten"><b>Kurz gesagt:</b> Die App setzt keine Cookies, nutzt kein Tracking und keine Statistik-Dienste und lädt nichts von fremden Servern. Einkommen, Haushalt, Alter und Profil bleiben nur in deinem Browser. Nur wenn du „Meine Objekte“ nutzt, werden Objekt- und Finanzierungsdaten unter einer pseudonymen Kennung in einer Datenbank in Frankfurt gespeichert – und nach 6 Monaten ohne Änderung automatisch gelöscht. Die KI-Funktion ist derzeit nicht aktiv (Demo-Modus).</div>
+<section id="ueberblick">
+<h2><span class="nr">1</span>Datenschutz auf einen Blick</h2>
+<p>Personenbezogene Daten sind alle Daten, mit denen du persönlich identifiziert werden kannst. Immo Finanz Pilot ist so gebaut, dass möglichst wenig davon anfällt:</p>
+<div class="kasten">Keine Cookies, kein Tracking, keine Statistik- oder Werbedienste, keine Inhalte von fremden Servern. Einkommen, Haushalt, Alter und Profil bleiben nur in deinem Browser. Nur wenn du „Meine Objekte“ nutzt, werden Objekt- und Finanzierungsdaten unter einer pseudonymen Kennung in einer Datenbank in Frankfurt gespeichert und 6 Monate nach der letzten Änderung automatisch gelöscht. Die KI-Funktion ist derzeit nicht aktiv (Demo-Modus).</div>
+</section>
 
-<h3>1. Verantwortlicher</h3>
-<p>Verantwortlich für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist: Mike Reichenbach, Werrabronner Straße 8, 76229 Karlsruhe, E-Mail: <a href="mailto:mike.reichenbach@tn.syntax-institut.de">mike.reichenbach@tn.syntax-institut.de</a>. Ein Datenschutzbeauftragter ist nicht benannt.</p>
+<section id="verantwortlicher">
+<h2><span class="nr">2</span>Verantwortlicher</h2>
+<p>Verantwortlich für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
+<p>Mike Reichenbach<br>Werrabronner Straße 8<br>76229 Karlsruhe<br>E-Mail: <a href="mailto:mike.reichenbach@tn.syntax-institut.de">mike.reichenbach@tn.syntax-institut.de</a></p>
+<p>Ein Datenschutzbeauftragter ist nicht benannt.</p>
+</section>
 
-<h3>2. Aufruf der Website (Hosting bei GitHub Pages)</h3>
-<p>Startseite und App werden über GitHub Pages ausgeliefert (GitHub, Inc., 88 Colton Street, San Francisco, CA 94107, USA). Beim Aufruf einer Seite protokolliert und speichert GitHub nach eigenen Angaben deine IP-Adresse zu Sicherheitszwecken – unabhängig davon, ob du ein GitHub-Konto hast. Für diese Protokolle ist GitHub selbst verantwortlich; Speicherdauer und weitere Einzelheiten richten sich nach der <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement">Datenschutzerklärung von GitHub</a>. Ich erhalte keine Zugriffsprotokolle oder Besucherstatistiken.</p>
-<p>Rechtsgrundlage für die Nutzung des Hostings ist mein berechtigtes Interesse an einer sicheren, kostenlosen Bereitstellung des Prototyps (Art. 6 Abs. 1 lit. f DSGVO). Eine Übermittlung in die USA ist möglich; GitHub ist nach dem EU-US Data Privacy Framework zertifiziert (Angemessenheitsbeschluss der EU-Kommission, Art. 45 DSGVO).</p>
+<section id="hosting">
+<h2><span class="nr">3</span>Hosting und Server-Logs</h2>
+<p>Startseite und App werden über GitHub Pages ausgeliefert. Anbieter ist GitHub, Inc., 88 Colton Street, San Francisco, CA 94107, USA. Beim Aufruf einer Seite protokolliert und speichert GitHub nach eigenen Angaben deine IP-Adresse zu Sicherheitszwecken, unabhängig davon, ob du ein GitHub-Konto hast.</p>
+<p>Für diese Protokolle ist GitHub selbst verantwortlich; Umfang und Speicherdauer richten sich nach der <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement">Datenschutzerklärung von GitHub</a>. Ich erhalte keine Zugriffsprotokolle und keine Besucherstatistiken.</p>
+<p>Rechtsgrundlage für den Einsatz des Hostings ist mein berechtigtes Interesse an einer sicheren und kostenlosen Bereitstellung des Prototyps (Art. 6 Abs. 1 lit. f DSGVO).</p>
+</section>
 
-<h3>3. Speicherung im Browser (dein Gerät)</h3>
-<p>Damit beim Navigieren nichts verloren geht, speichert die App in deinem Browser (localStorage): den aktuellen Entwurf, deine Einstellungen, freiwillige Haushalts- und Profilangaben sowie – falls du „Meine Objekte“ nutzt – die Anmeldedaten der pseudonymen Kennung. Diese Daten verlassen dein Gerät nicht (Ausnahme: Abschnitt 4 für „Meine Objekte“). Die Speicherung ist für die von dir aufgerufene Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Du löschst alles unter „Meine Daten“ → „Alle Daten löschen“ oder über die Browser-Einstellungen.</p>
-<p>Den Exposé-Text liest die App auf deinem Gerät; er wird nur während der Sitzung im Arbeitsspeicher gehalten.</p>
+<section id="browser">
+<h2><span class="nr">4</span>Speicherung in deinem Browser</h2>
+<p>Damit beim Navigieren nichts verloren geht, speichert die App im Local Storage deines Browsers: den aktuellen Entwurf, deine Einstellungen, freiwillige Haushalts- und Profilangaben sowie, falls du „Meine Objekte“ nutzt, die Anmeldedaten der pseudonymen Kennung.</p>
+<p>Diese Daten werden nicht an mich übermittelt; nur für „Meine Objekte“ gilt Abschnitt 5. Die Speicherung ist für die von dir aufgerufene Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Rechtsgrundlage für die weitere Verarbeitung ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+<p>Den Exposé-Text liest die App auf deinem Gerät aus und hält ihn nur während der Sitzung im Arbeitsspeicher. Löschen kannst du alles unter „Meine Daten“ → „Alle Daten löschen“ oder über die Einstellungen deines Browsers.</p>
+</section>
 
-<h3>4. „Meine Objekte“ (Supabase, Region Frankfurt)</h3>
-<p>Sobald du den Bereich „Meine Objekte“ öffnest, ein Objekt speicherst oder den Datenexport nutzt, verbindet sich die App mit der Datenbank, und dein Browser erhält eine <b>pseudonyme Kennung ohne Namen und ohne Login</b>. Gespeichert werden: Adresse bzw. Ort des Objekts, Kaufpreis, die geprüften Exposé-Werte mit <b>kurzen Belegstellen aus dem Exposé (höchstens ca. 120 Zeichen je Stelle)</b>, Finanzierungsangaben, Unterlagen-Stand, Ampel-Ergebnis und von dir übernommene KI-Textvorschläge sowie technische Zeitstempel. Bei der Anmeldung verarbeitet der Dienst technisch bedingt auch deine IP-Adresse.</p>
-<p><b>Nie gespeichert</b> werden Einkommen, Haushalt, Alter, Profil, Fotos oder der vollständige Exposé-Text – die Datenbank lehnt solche Bereiche zusätzlich technisch ab.</p>
-<p>Dienstleister: Supabase Pte. Ltd. (Singapur) als Auftragsverarbeiter auf Grundlage seines <a href="https://supabase.com/legal/dpa">Auftragsverarbeitungsvertrags</a>; die Datenbank liegt in der Region EU-Central-1 (Frankfurt). Zugriffe von Supabase oder seinen Unterauftragnehmern außerhalb der EU sind nach dessen Vertrag möglich und durch Standardvertragsklauseln (Art. 46 DSGVO) abgesichert.</p>
-<p>Rechtsgrundlage ist die Bereitstellung der von dir genutzten Speicherfunktion (Art. 6 Abs. 1 lit. b DSGVO). Jede Kennung sieht nur ihre eigenen Objekte.</p>
-<p><b>Speicherdauer:</b> Objekte werden <b>automatisch 6 Monate nach ihrer letzten Änderung gelöscht</b>; pseudonyme Kennungen ohne Objekte ebenfalls nach 6 Monaten ohne Anmeldung. Du kannst einzelne Objekte oder alles jederzeit vorher löschen („Meine Daten“ → „Alle Daten löschen“ entfernt die Kennung samt aller Objekte).</p>
+<section id="objekte">
+<h2><span class="nr">5</span>„Meine Objekte“ (Supabase, Region Frankfurt)</h2>
+<p>Sobald du den Bereich „Meine Objekte“ öffnest, ein Objekt speicherst oder den Datenexport nutzt, verbindet sich die App mit der Datenbank. Dein Browser erhält dabei eine <b>pseudonyme Kennung ohne Namen und ohne Login</b>.</p>
+<p>Gespeichert werden: Adresse bzw. Ort des Objekts, Kaufpreis, die geprüften Exposé-Werte mit <b>kurzen Belegstellen aus dem Exposé (höchstens 120 Zeichen je Stelle)</b>, Finanzierungsangaben, Unterlagen-Stand, Ampel-Ergebnis, von dir übernommene KI-Textvorschläge und technische Zeitstempel. Bei der Anmeldung verarbeitet der Dienst technisch bedingt auch deine IP-Adresse.</p>
+<p><b>Nie gespeichert</b> werden Einkommen, Haushalt, Alter, Profil, Fotos oder der vollständige Exposé-Text. Die Datenbank lehnt solche Bereiche zusätzlich technisch ab. Jede Kennung sieht nur ihre eigenen Objekte.</p>
+<p>Dienstleister ist die Supabase Pte. Ltd. (Singapur) als Auftragsverarbeiter auf Grundlage ihres <a href="https://supabase.com/legal/dpa">Auftragsverarbeitungsvertrags</a>. Die Datenbank liegt in der Region EU-Central-1 (Frankfurt).</p>
+<p>Rechtsgrundlage ist die Bereitstellung der von dir genutzten Speicherfunktion (Art. 6 Abs. 1 lit. b DSGVO).</p>
+</section>
 
-<h3>5. KI-Auslesen von Exposés (derzeit nicht aktiv)</h3>
-<p>Im aktuellen Stand ist keine KI angebunden; für das fiktive Beispiel-Exposé nutzt die App eine vorbereitete Demo-Antwort, und es werden keine Daten an KI-Dienste gesendet. Geplant ist, nach deiner ausdrücklichen Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) nur den von dir sichtbaren und bearbeitbaren Exposé-Text über den Automatisierungsdienst Make an Google Gemini im <b>bezahlten Tarif</b> zu senden, bei dem Eingaben nicht zum Training genutzt werden. <b>Bevor diese Funktion aktiviert wird, wird dieser Abschnitt um Empfänger, Region und Speicherdauer ergänzt.</b> Du kannst die App jederzeit ohne KI mit manueller Eingabe nutzen.</p>
+<section id="ki">
+<h2><span class="nr">6</span>KI-Auslesen von Exposés (derzeit nicht aktiv)</h2>
+<p>Im aktuellen Stand ist keine KI angebunden. Für das fiktive Beispiel-Exposé nutzt die App eine vorbereitete Demo-Antwort; es werden keine Daten an KI-Dienste gesendet.</p>
+<p>Geplant ist, nach deiner ausdrücklichen Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) nur den von dir sichtbaren und bearbeitbaren Exposé-Text über den Automatisierungsdienst Make an Google Gemini im <b>bezahlten Tarif</b> zu senden, bei dem Eingaben nicht zum Training genutzt werden. <b>Bevor diese Funktion aktiviert wird, ergänze ich diesen Abschnitt um Empfänger, Region und Speicherdauer.</b> Du kannst die App jederzeit ohne KI mit manueller Eingabe nutzen.</p>
+</section>
 
-<h3>6. PDF und Datenexport</h3>
-<p>Die „Objekt-Präsentation für die Bank“ (PDF) und der Datenexport (JSON-Datei) werden vollständig auf deinem Gerät erstellt; dabei wird nichts übertragen. Ob und an wen du das PDF weitergibst, entscheidest du selbst.</p>
+<section id="pdf">
+<h2><span class="nr">7</span>PDF und Datenexport</h2>
+<p>Die „Objekt-Präsentation für die Bank“ (PDF) und der Datenexport (JSON-Datei) entstehen vollständig auf deinem Gerät; dabei wird nichts übertragen. Ob und an wen du das PDF weitergibst, entscheidest du selbst.</p>
+</section>
 
-<h3>7. Kontakt per E-Mail</h3>
-<p>Wenn du mir schreibst, verarbeite ich deine Angaben nur zur Bearbeitung deiner Anfrage (Art. 6 Abs. 1 lit. f DSGVO) und lösche sie, wenn sie dafür nicht mehr nötig sind.</p>
+<section id="kontakt">
+<h2><span class="nr">8</span>Kontaktaufnahme</h2>
+<p>Wenn du mir per E-Mail schreibst, verarbeite ich deine Angaben zur Bearbeitung deiner Anfrage und für mögliche Anschlussfragen. Rechtsgrundlage ist mein berechtigtes Interesse an einer effizienten Kommunikation (Art. 6 Abs. 1 lit. f DSGVO). Ich lösche deine Anfrage, wenn sie abschließend bearbeitet ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
+</section>
 
-<h3>8. Keine automatisierten Entscheidungen</h3>
-<p>Die App trifft keine Entscheidungen mit rechtlicher Wirkung über dich (Art. 22 DSGVO). Ampeln und Kennzahlen sind Orientierung für deine eigene Prüfung; die KI rechnet nie und bewertet nicht deine Kreditwürdigkeit.</p>
+<section id="empfaenger">
+<h2><span class="nr">9</span>Empfänger und Drittländer</h2>
+<p>Empfänger sind nur die genannten Dienstleister: GitHub (Hosting, Abschnitt 3) und Supabase (Datenbank, Abschnitt 5). Daten werden weder verkauft noch für Werbung genutzt.</p>
+<p>Eine Übermittlung in Staaten außerhalb der EU ist möglich: GitHub ist nach dem EU-US Data Privacy Framework zertifiziert (Angemessenheitsbeschluss, Art. 45 DSGVO). Für Zugriffe von Supabase oder seinen Unterauftragnehmern außerhalb der EU gelten die Standardvertragsklauseln des Auftragsverarbeitungsvertrags (Art. 46 DSGVO).</p>
+</section>
 
-<h3>9. Deine Rechte</h3>
-<p>Du hast das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21 DSGVO). Eine Einwilligung kannst du jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3 DSGVO), in der App unter „Meine Daten“. Für Anfragen genügt eine E-Mail an die oben genannte Adresse. Bitte beachte: Da „Meine Objekte“ ohne Namen gespeichert wird, kann ich Daten nur zuordnen, wenn du die Kennung nennst (sichtbar über den Datenexport).</p>
+<section id="speicherdauer">
+<h2><span class="nr">10</span>Speicherdauer</h2>
+<p>Ich speichere personenbezogene Daten nur so lange, wie es für den jeweiligen Zweck erforderlich ist.</p>
+<p><b>„Meine Objekte“</b> werden automatisch <b>6 Monate nach ihrer letzten Änderung</b> gelöscht; pseudonyme Kennungen ohne Objekte 6 Monate nach der letzten Anmeldung. Du kannst einzelne Objekte oder alles jederzeit vorher löschen. <b>Daten im Browser</b> bleiben, bis du sie löschst. <b>E-Mail-Anfragen</b> lösche ich nach abschließender Bearbeitung.</p>
+</section>
+
+<section id="entscheidungen">
+<h2><span class="nr">11</span>Keine automatisierten Entscheidungen</h2>
+<p>Die App trifft keine Entscheidungen mit rechtlicher oder ähnlich erheblicher Wirkung über dich (Art. 22 DSGVO). Ampeln und Kennzahlen sind Orientierung für deine eigene Prüfung; die KI rechnet nie und bewertet nicht deine Kreditwürdigkeit.</p>
+</section>
+
+<section id="rechte">
+<h2><span class="nr">12</span>Deine Rechte</h2>
+<p>Du hast das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21 DSGVO). Eine erteilte Einwilligung kannst du jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3 DSGVO), in der App unter „Meine Daten“.</p>
+<p>Für Anfragen genügt eine E-Mail an die oben genannte Adresse. Da „Meine Objekte“ ohne Namen gespeichert wird, kann ich Daten nur zuordnen, wenn du die Kennung nennst (sichtbar im Datenexport).</p>
 <p>Du hast außerdem das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO), zum Beispiel beim <a href="https://www.baden-wuerttemberg.datenschutz.de/beschwerde/">Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg</a>, Postfach 10 29 32, 70025 Stuttgart.</p>
+</section>
 
-<h3>10. Änderungen</h3>
-<p>Diese Erklärung wird angepasst, sobald sich Funktionen oder Dienstleister ändern – insbesondere vor Aktivierung der KI-Funktion. Es gilt die jeweils hier veröffentlichte Fassung.</p>
-<p class="klein">Stand: 25.11.2026</p>
+<section id="aenderungen">
+<h2><span class="nr">13</span>Änderungen</h2>
+<p>Ich passe diese Erklärung an, sobald sich Funktionen oder Dienstleister ändern, insbesondere vor Aktivierung der KI-Funktion. Es gilt die jeweils hier veröffentlichte Fassung.</p>
+</section>
+
+<p class="klein">Stand dieser Datenschutzerklärung: 25. November 2026</p>
+<nav class="unten" aria-label="Weitere Seiten"><a href="impressum.html">Impressum</a><a href="app/">Zum Prototyp</a><a href="./">Startseite</a></nav>
 </main>
 </body>
 </html>
