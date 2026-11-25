@@ -1,4 +1,4 @@
-/* Immo Finanz Pilot – "Meine Objekte": Speicherung in Supabase (EU) mit anonymer Anmeldung, Rückfall auf lokalen Speicher.
+/* Immo Finanz Pilot – "Meine Objekte": Speicherung in Supabase (EU) mit pseudonymer Kennung (Supabase "anonymous sign-in"), Rückfall auf lokalen Speicher.
    Ohne Zusatzbibliothek: direkte Aufrufe der Supabase-Schnittstellen (Auth + REST).
    Gesendet werden ausschließlich Objekt- und Finanzierungsdaten – lokale Daten (Haushalt, Profil, Alter, Fotos, Exposé-Text) nie. */
 (function () {
@@ -14,6 +14,14 @@
     var erlaubt = ["id", "quelle", "adresse", "ort", "bundesland", "bundeslandAbgeleitet", "felder", "bestaetigt", "finanzierung", "ausstattung", "unterlagen", "fundstellenUnterlagen", "warnungen", "kiTexte", "refEigen", "angelegt", "geaendert"];
     Object.keys(c).forEach(function (k) { if (erlaubt.indexOf(k) < 0) delete c[k]; });
     if (c.finanzierung) { delete c.finanzierung.ALT; delete c.finanzierung.RENT; }
+    /* Belegstellen aus dem Exposé auf max. 120 Zeichen kürzen (Datensparsamkeit, Entscheidung E-04) */
+    var MAX = 120, kurz = function (t) { t = String(t == null ? "" : t); return t.length > MAX ? t.slice(0, MAX - 1) + "…" : t; };
+    if (c.felder) Object.keys(c.felder).forEach(function (k) {
+      var f = c.felder[k]; if (!f) return;
+      if (f.fundstelle && f.fundstelle.zitat) f.fundstelle.zitat = kurz(f.fundstelle.zitat);
+      if (Array.isArray(f.kandidaten)) f.kandidaten.forEach(function (q) { if (q && q.zitat) q.zitat = kurz(q.zitat); });
+    });
+    if (c.fundstellenUnterlagen) Object.keys(c.fundstellenUnterlagen).forEach(function (k) { c.fundstellenUnterlagen[k] = kurz(c.fundstellenUnterlagen[k]); });
     return c;
   }
   IFP.bereinigtFuerSpeicher = bereinigt;
