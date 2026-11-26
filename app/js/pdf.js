@@ -141,7 +141,7 @@
       S.y += 25;
       S.schrift(11, true); S.farbe(FARBE.text); doc.text("Gesamturteil:", R, S.y); var gw = S.ampel(erg.gesamt.status, R + 28, S.y);
       S.schrift(9.5); S.farbe(FARBE.grau); doc.text(t(erg.gesamt.gruen + " von " + erg.gesamt.bewertet + " bewerteten Prüfungen gut"), R + 31 + gw, S.y); S.y += 5;
-      if (erg.gesamt.status === "unvollstaendig") S.absatz("Kein Gesamturteil, solange Pflichtprüfungen offen sind: " + erg.gesamt.offen.join(", ") + ".", { gr: 9, farbe: FARBE.grau });
+      if (erg.gesamt.status === "unvollstaendig") S.absatz("Kein Gesamturteil, solange Pflichtprüfungen offen sind: " + erg.gesamt.offen.join(", ") + "." + (erg.gesamt.tendenz ? " Tendenz mit Annahme: " + { gruen: "gut", gelb: "prüfen", rot: "kritisch" }[erg.gesamt.tendenz] + "." : ""), { gr: 9, farbe: FARBE.grau });
       S.y += 2;
       S.tabelle([{ b: 62 }, { b: 30, rechts: true }, { b: 32 }, { b: S.innen - 124 }],
         ks.filter(pflicht).map(function (k) { var q = k.ampel; return [k.titel, k.wert, { ampel: q ? q.status : "unvollstaendig" }, { grau: true, text: q && q.status === "unvollstaendig" ? U.ampelZusatz(q) : k.unter }]; }),

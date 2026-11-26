@@ -192,14 +192,18 @@
       if (d.id === "RS_RENTE" && W.RS_Rente_na) { amp.status = "nichtbewertet"; amp.text = "nicht anwendbar"; return amp; }
       if (d.id === "DSCR" && W.DSCR_na) { amp.status = "nichtbewertet"; amp.text = "kein Darlehen"; return amp; }
       if (amp.fehlt.length || d.wert === null || d.wert === undefined) { amp.status = "unvollstaendig"; return amp; }
-      if (amp.annahmen.length) { amp.status = "unvollstaendig"; amp.wegenAnnahme = true; return amp; }
-      var v = d.wert;
-      if (d.typ === "ja") { amp.status = v ? "gruen" : "rot"; return amp; }
-      var gerundet = d.typ === "%" ? Math.round(v * 10000) / 10000 : r2(v);
-      var sch2 = sch;
-      if (d.id === "HUE") sch2 = { richtung: "hoch", gruen: r2(e.NE * sch.gruenAnteilNE), gelb: sch.gelb };
-      if (d.id === "RS_RENTE") sch2 = { richtung: "tief", gruen: 0, gelb: r2(W.D * sch.gelbAnteilD) };
-      amp.status = farbe(gerundet, sch2);
+      var v = d.wert, st;
+      if (d.typ === "ja") st = v ? "gruen" : "rot";
+      else {
+        var gerundet = d.typ === "%" ? Math.round(v * 10000) / 10000 : r2(v);
+        var sch2 = sch;
+        if (d.id === "HUE") sch2 = { richtung: "hoch", gruen: r2(e.NE * sch.gruenAnteilNE), gelb: sch.gelb };
+        if (d.id === "RS_RENTE") sch2 = { richtung: "tief", gruen: 0, gelb: r2(W.D * sch.gelbAnteilD) };
+        st = farbe(gerundet, sch2);
+      }
+      // Mit Annahme: Ampel bleibt grau (US-04 AK 4), die Tendenz wird zusätzlich genannt (Nutzertest W9T4, Punkt 6)
+      if (amp.annahmen.length) { amp.status = "unvollstaendig"; amp.wegenAnnahme = true; amp.tendenz = st; return amp; }
+      amp.status = st;
       return amp;
     });
 
@@ -213,6 +217,11 @@
     else if (bewertet.some(function (x) { return x.status === "gelb"; })) gesamt.status = "gelb";
     else if (bewertet.length) gesamt.status = "gruen";
     else gesamt.status = "unvollstaendig";
+    // Tendenz des Gesamturteils, wenn nur Annahmen (keine fehlenden Werte) das Urteil verhindern
+    if (pflichtOffen.length && pflichtOffen.every(function (x) { return x.tendenz; })) {
+      var alleT = bewertet.map(function (x) { return x.status; }).concat(pflichtOffen.map(function (x) { return x.tendenz; }));
+      gesamt.tendenz = alleT.indexOf("rot") >= 0 ? "rot" : alleT.indexOf("gelb") >= 0 ? "gelb" : "gruen";
+    }
 
     return { werte: W, ampeln: ampeln, gesamt: gesamt, hinweise: hinweise };
   }

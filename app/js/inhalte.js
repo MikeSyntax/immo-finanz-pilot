@@ -11,36 +11,36 @@
       { id: "A2", name: "Grundriss", wofuer: "Raumaufteilung, Plausibilität der Fläche", wer: "Makler / Verwaltung" },
       { id: "A3", name: "Wohnflächenberechnung", wofuer: "Die Bank rechnet mit der Wohnfläche, nicht mit der Nutzfläche", wer: "Makler / Verkäufer" },
       { id: "A4", name: "Energieausweis", wofuer: "Energiezustand, gesetzlich vorgeschrieben", wer: "Makler / Verkäufer" },
-      { id: "A5", name: "Baujahr und Modernisierungen (Heizung, Fenster, Dach, Fassade)", wofuer: "Restnutzungsdauer und Risiko anstehender Kosten", wer: "Makler / Verwaltung" },
-      { id: "A6", name: "Fotos", wofuer: "Zustand für die Bank sichtbar machen", wer: "Makler / ich selbst" } ] },
+      { id: "A5", frage: "Welche Modernisierungen gab es wann (Heizung, Fenster, Dach, Fassade)?", name: "Baujahr und Modernisierungen (Heizung, Fenster, Dach, Fassade)", wofuer: "Restnutzungsdauer und Risiko anstehender Kosten", wer: "Makler / Verwaltung" },
+      { id: "A6", frage: "Haben Sie aktuelle Fotos der Wohnung (innen und außen)?", name: "Fotos", wofuer: "Zustand für die Bank sichtbar machen", wer: "Makler / ich selbst" } ] },
     { gruppe: "B", titel: "Rechtliches", ki: true, posten: [
       { id: "B1", name: "Aktueller Grundbuchauszug (max. 3 Monate alt)", wofuer: "Eigentum, Lasten, Rechte Dritter", wer: "Grundbuchamt / Notar" },
       { id: "B2", name: "Teilungserklärung mit Aufteilungsplan und Gemeinschaftsordnung", wofuer: "Was genau gekauft wird, Sondernutzungsrechte", wer: "Verwaltung / Grundbuchamt" },
       { id: "B3", name: "Flurkarte / Lageplan", wofuer: "Lage des Grundstücks", wer: "Vermessungsamt / Makler" },
-      { id: "B4", optional: true, name: "Auskunft Baulastenverzeichnis (falls nötig)", wofuer: "Öffentlich-rechtliche Lasten", wer: "Bauamt" },
-      { id: "B5", optional: true, name: "Erbbaurechtsvertrag (falls Erbbaurecht)", wofuer: "Laufzeit und Erbbauzins beeinflussen den Wert", wer: "Verkäufer / Notar" } ] },
+      { id: "B4", optional: true, frage: "Gibt es Eintragungen im Baulastenverzeichnis?", name: "Auskunft Baulastenverzeichnis (falls nötig)", wofuer: "Öffentlich-rechtliche Lasten", wer: "Bauamt" },
+      { id: "B5", optional: true, frage: "Besteht ein Erbbaurecht? Wenn ja: Bitte den Erbbaurechtsvertrag zusenden.", name: "Erbbaurechtsvertrag (falls Erbbaurecht)", wofuer: "Laufzeit und Erbbauzins beeinflussen den Wert", wer: "Verkäufer / Notar" } ] },
     { gruppe: "C", titel: "WEG & Verwaltung", ki: true, posten: [
       { id: "C1", name: "Hausgeldabrechnungen der letzten 2–3 Jahre", wofuer: "Tatsächliche Kosten", wer: "Verwaltung" },
-      { id: "C2", name: "Aufteilung Hausgeld umlagefähig / nicht umlagefähig", wofuer: "Nur der nicht umlagefähige Teil belastet dich – nötig für Cashflow und DSCR", wer: "Verwaltung" },
+      { id: "C2", frage: "Wie teilt sich das Hausgeld in umlagefähig und nicht umlagefähig auf?", name: "Aufteilung Hausgeld umlagefähig / nicht umlagefähig", wofuer: "Nur der nicht umlagefähige Teil belastet dich – nötig für Cashflow und DSCR", wer: "Verwaltung" },
       { id: "C3", name: "Aktueller Wirtschaftsplan", wofuer: "Geplante Kosten der Gemeinschaft", wer: "Verwaltung" },
       { id: "C4", name: "Protokolle der Eigentümerversammlungen (letzte 3 Jahre)", wofuer: "Beschlüsse, Streit, anstehende Sanierungen", wer: "Verwaltung" },
       { id: "C5", name: "Beschluss-Sammlung", wofuer: "Alle gültigen Beschlüsse", wer: "Verwaltung" },
-      { id: "C6", name: "Höhe der Erhaltungsrücklage (gesamt und anteilig)", wofuer: "Puffer für Reparaturen", wer: "Verwaltung" },
-      { id: "C7", name: "Beschlossene oder geplante Sonderumlagen", wofuer: "Zusätzliche Kosten nach dem Kauf", wer: "Verwaltung" },
-      { id: "C8", name: "Verwalter-Kontakt, ggf. Verwalterzustimmung", wofuer: "Manche Gemeinschaften verlangen eine Zustimmung zum Verkauf", wer: "Verwaltung" } ] },
+      { id: "C6", frage: "Wie hoch ist die Erhaltungsrücklage – insgesamt und anteilig für diese Wohnung?", name: "Höhe der Erhaltungsrücklage (gesamt und anteilig)", wofuer: "Puffer für Reparaturen", wer: "Verwaltung" },
+      { id: "C7", frage: "Sind Sonderumlagen beschlossen oder geplant?", name: "Beschlossene oder geplante Sonderumlagen", wofuer: "Zusätzliche Kosten nach dem Kauf", wer: "Verwaltung" },
+      { id: "C8", frage: "Wer ist die Verwaltung, und braucht der Verkauf eine Verwalterzustimmung?", name: "Verwalter-Kontakt, ggf. Verwalterzustimmung", wofuer: "Manche Gemeinschaften verlangen eine Zustimmung zum Verkauf", wer: "Verwaltung" } ] },
     { gruppe: "D", titel: "Vermietung", ki: true, posten: [
       { id: "D1", name: "Mietvertrag", wofuer: "Miethöhe, Laufzeit, Sonderregeln", wer: "Verkäufer" },
-      { id: "D2", name: "Aktuelle Kaltmiete und letzte Mieterhöhung", wofuer: "Nachhaltig erzielbare Miete", wer: "Verkäufer" },
+      { id: "D2", frage: "Wie hoch ist die aktuelle Kaltmiete und wann war die letzte Mieterhöhung?", name: "Aktuelle Kaltmiete und letzte Mieterhöhung", wofuer: "Nachhaltig erzielbare Miete", wer: "Verkäufer" },
       { id: "D3", name: "Nebenkostenabrechnung", wofuer: "Umlagen korrekt, keine Nachforderungen", wer: "Verkäufer / Verwaltung" },
-      { id: "D4", name: "Kaution", wofuer: "Wird beim Kauf übertragen", wer: "Verkäufer" },
-      { id: "D5", name: "Mietrückstände / Mietstreitigkeiten", wofuer: "Risiko für den Cashflow", wer: "Verkäufer" },
-      { id: "D6", name: "Kündigungen", wofuer: "Drohender Leerstand", wer: "Verkäufer" } ] },
-    { gruppe: "E", titel: "Persönlich (für die Bank)", ki: false, posten: [
-      { id: "E1", name: "Selbstauskunft", wofuer: "Formular der Bank zu deinen Finanzen", wer: "ich selbst" },
-      { id: "E2", name: "Einkommensnachweise (Gehalt oder BWA/Steuerbescheide)", wofuer: "Tragfähigkeit der Finanzierung", wer: "ich selbst" },
-      { id: "E3", name: "Eigenkapitalnachweis", wofuer: "Herkunft des Eigenkapitals", wer: "ich selbst" },
-      { id: "E4", name: "Übersicht bestehender Darlehen und Immobilien", wofuer: "Gesamtbelastung", wer: "ich selbst" },
-      { id: "E5", name: "Ausweis", wofuer: "Identifikation", wer: "ich selbst" } ] }
+      { id: "D4", frage: "Wie hoch ist die Kaution und wird sie beim Kauf übertragen?", name: "Kaution", wofuer: "Wird beim Kauf übertragen", wer: "Verkäufer" },
+      { id: "D5", frage: "Gibt es Mietrückstände oder Streit mit dem Mieter?", name: "Mietrückstände / Mietstreitigkeiten", wofuer: "Risiko für den Cashflow", wer: "Verkäufer" },
+      { id: "D6", frage: "Liegt eine Kündigung vor oder ist eine angekündigt?", name: "Kündigungen", wofuer: "Drohender Leerstand", wer: "Verkäufer" } ] },
+    { gruppe: "E", titel: "Persönlich (für die Bank)", ki: false, hinweis: "Banken unterscheiden sich – frag deine Bank nach ihrer eigenen Liste. Die Angaben unten sind übliche Beispiele.", posten: [
+      { id: "E1", name: "Selbstauskunft", konkret: "Formular deiner Bank: Einnahmen, Ausgaben, Vermögen, Schulden. Gibt dir die Bank.", wofuer: "Formular der Bank zu deinen Finanzen", wer: "ich selbst" },
+      { id: "E2", konkret: "Angestellte: meist die letzten 3 Gehaltsabrechnungen und die Lohnsteuerbescheinigung vom Vorjahr. Selbstständige: Steuerbescheide und BWA der letzten 2 Jahre.", name: "Einkommensnachweise (Gehalt oder BWA/Steuerbescheide)", wofuer: "Tragfähigkeit der Finanzierung", wer: "ich selbst" },
+      { id: "E3", konkret: "Aktuelle Konto- oder Depotauszüge, die das Eigenkapital zeigen; bei Schenkung oder Darlehen von Eltern ein kurzer Nachweis.", name: "Eigenkapitalnachweis", wofuer: "Herkunft des Eigenkapitals", wer: "ich selbst" },
+      { id: "E4", konkret: "Kreditverträge mit aktueller Restschuld und Rate; bei vorhandenen Immobilien Mietverträge und Darlehensstand.", name: "Übersicht bestehender Darlehen und Immobilien", wofuer: "Gesamtbelastung", wer: "ich selbst" },
+      { id: "E5", konkret: "Personalausweis oder Reisepass, gültig.", name: "Ausweis", wofuer: "Identifikation", wer: "ich selbst" } ] }
   ];
 
   IFP.GLOSSAR = {
@@ -59,6 +59,7 @@
     Haushaltsüberschuss: "Was dir nach allen Einnahmen und Ausgaben inklusive der neuen Finanzierung im Monat übrig bleibt – so prüft die Bank die Tragfähigkeit.",
     "Nicht umlagefähiges Hausgeld": "Teil des Hausgelds, den du als Vermieter selbst trägst (z. B. Verwaltung, Rücklage).",
     Mietausfallwagnis: "Pauschaler Abzug für Leerstand oder ausbleibende Mietzahlungen.",
+    "Kaufpreis/m² vs. Markt": "Vergleicht den Kaufpreis pro Quadratmeter mit einem Referenzwert für ähnliche Wohnungen am Ort (z. B. Grundstücksmarktbericht). Minus = günstiger als der Vergleich, Plus = teurer.",
     "Nötige Miete/m²": "Rückwärtsrechnung: Welche Miete pro m² wäre nötig, damit der Kaufpreis deine Zielrendite erreicht?",
     Eigenkapitalrendite: "Cashflow plus Tilgung im ersten Jahr, geteilt durch dein Eigenkapital (vereinfacht, ohne Wertsteigerung und Steuer)."
   };

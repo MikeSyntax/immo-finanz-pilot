@@ -125,7 +125,7 @@
     return '<div class="karte onboarding-karte"><div class="gross" aria-hidden="true">' + k[0] + "</div><h2>" + k[1] + "</h2><p>" + k[2] + '</p>' +
       '<div class="punkte" aria-label="Schritt ' + (onboardingSchritt + 1) + ' von 3">' + [0, 1, 2].map(function (i) { return '<span class="' + (i === onboardingSchritt ? "an" : "") + '"></span>'; }).join("") + "</div>" +
       '<div class="btn-reihe" style="justify-content:center">' + (onboardingSchritt < 2 ? '<button class="btn primaer" data-aktion="ob-weiter">Weiter</button>' : '<button class="btn primaer" data-aktion="ob-fertig">Los geht\'s</button>') +
-      '<button class="btn" data-aktion="ob-fertig">Überspringen</button></div><p class="klein zweit" style="margin-top:1rem">Später jederzeit unter „Hilfe“ wieder aufrufbar.</p></div>';
+      (onboardingSchritt < 2 ? '<button class="btn" data-aktion="ob-fertig">Überspringen</button>' : "") + '</div><p class="klein zweit" style="margin-top:1rem">Später jederzeit unter „Hilfe“ wieder aufrufbar.</p></div>';
   };
 
   V.start = function () {
@@ -142,6 +142,7 @@
 
   V.einwilligung = function () {
     return '<div class="karte"><h2>Bevor die KI dein Exposé liest</h2>' +
+      '<ul class="klein" style="margin:.25rem 0 .75rem"><li><b>Was geht raus?</b> Nur der Exposé-Text.</li><li><b>Was nie?</b> Einkommen, Haushalt, Alter, Profil, Fotos.</li><li><b>Wofür?</b> Die KI liest Kaufpreis, Miete usw. aus – du prüfst jeden Wert.</li><li><b>Pflicht?</b> Nein. Ohne Zustimmung gibst du die Werte selbst ein.</li></ul>' +
       "<p>Zum Auslesen schickt die App <b>nur den Text des Exposés</b> an den Automatisierungsdienst <b>Make</b> und von dort an den KI-Dienst <b>Google Gemini</b>. Einkommen, Haushalt und Profil werden nie gesendet.</p>" +
       '<div class="hinweis warnung"><b>Bitte vorher schwärzen:</b> Namen von Mietern oder Verkäufern, Telefonnummern, E-Mail-Adressen und Vertragsdaten. Das Beispiel-Exposé enthält nur erfundene Angaben.</div>' +
       '<div class="hinweis"><b>Was mit den Daten passiert:</b> Die genauen Speicher- und Nutzungsregeln des KI-Dienstes werden vor der Live-Anbindung geprüft und hier eingetragen. Geplant ist der <b>bezahlte Gemini-Tarif</b>, bei dem Eingaben nicht zum Training genutzt werden. Speicherdauer bei Make und Google: <b>wird vor der Live-Anbindung geprüft und hier eingetragen.</b> Die App speichert den Exposé-Text nicht; nur kurze Belegstellen (max. ca. 120 Zeichen) werden mit dem Objekt gespeichert, wenn du es unter „Meine Objekte“ ablegst.</div>' +
@@ -169,7 +170,7 @@
     var fehler = iz.fehler ? '<div class="hinweis fehler" role="alert"><b>Das hat nicht geklappt:</b> ' + esc(iz.fehler) + '<div class="btn-reihe"><button class="btn" data-aktion="import-neu">Nochmal versuchen</button>' + (/eingescannt/.test(iz.fehler) ? '<button class="btn" data-aktion="import-ansicht" data-wert="text">Text stattdessen einfügen</button>' : "") + '<button class="btn link" data-aktion="start-manuell">Selbst eingeben</button></div></div>' : "";
     return fehler + '<div class="karte">' + tabs +
       (importAnsicht === "pdf"
-        ? '<div class="feld" style="margin-top:1rem"><label for="pdf-datei">Exposé als PDF (bis 10 MB)</label><input id="pdf-datei" type="file" accept="application/pdf,.pdf" data-aktion="pdf-gewaehlt"><div class="hilfe">Das PDF wird auf deinem Gerät in Text umgewandelt. Erst wenn du „Auslesen“ tippst, wird der Text gesendet.</div></div>'
+        ? '<div class="feld" style="margin-top:1rem"><span class="label-text">Exposé als PDF (bis 10 MB)</span><div class="datei-wahl"><input id="pdf-datei" class="sr-only" type="file" accept="application/pdf,.pdf" data-aktion="pdf-gewaehlt"><label for="pdf-datei" class="btn">PDF auswählen</label><span class="klein zweit">' + (IFP.sitzung.exposeName ? esc(IFP.sitzung.exposeName) : "noch keine Datei ausgewählt") + '</span></div><div class="hilfe">Das PDF wird auf deinem Gerät in Text umgewandelt. Erst wenn du „Auslesen“ tippst, wird der Text gesendet.</div></div>'
         : '<div class="feld" style="margin-top:1rem"><label for="exp-text">Exposé-Text</label><textarea id="exp-text" placeholder="Text aus dem Exposé hier einfügen …"></textarea></div><button class="btn primaer" data-aktion="text-uebernehmen">Text übernehmen</button>') +
       "</div>" + '<div class="karte flach"><h3>Kein eigenes Exposé zur Hand?</h3><div class="btn-reihe" style="margin-top:.5rem"><button class="btn" data-aktion="start-beispiel">Beispiel-Exposé nutzen</button><a class="btn link" href="daten/Beispiel-Expose_Leipzig_FIKTIV.pdf" download>Beispiel-PDF herunterladen</a><button class="btn link" data-aktion="start-manuell">Selbst eingeben</button></div></div>';
   };
@@ -192,6 +193,7 @@
     if (f.unsicher && !f.geklaert) b.push('<span class="badge unsicher">unsicher</span>');
     if (f.zustand === "leer") b.push('<span class="badge fehlt">fehlt</span>');
     if (f.zustand === "annahme") b.push('<span class="badge annahme">Annahme</span>');
+    if (f.herkunft === "bestaetigt" && f.zustand !== "leer") b.push('<span class="badge ok">' + (f.geklaert ? "von dir gewählt" : "von dir bestätigt") + (f.fundstelle && f.fundstelle.seite ? " · Exposé S. " + f.fundstelle.seite : "") + "</span>");
     if (f.herkunft === "korrigiert") b.push('<span class="badge korrigiert">manuell korrigiert</span>');
     if (f.herkunft === "manuell" && f.zustand !== "leer") b.push('<span class="badge korrigiert">selbst eingegeben</span>');
     if (f.abgeleitet) b.push('<span class="badge unsicher">abgeleitet</span>');
@@ -259,8 +261,10 @@
       '<input id="f-wert" type="' + (d.text ? "text" : "text") + '" inputmode="' + (d.text ? "text" : "decimal") + '" value="' + esc(anzeige) + '"></div>' +
       '<div class="btn-reihe"><button class="btn primaer" data-aktion="feld-speichern" data-feld="' + id + '">Übernehmen</button>' +
       (d.text ? "" : '<button class="btn" data-aktion="feld-annahme" data-feld="' + id + '">Als Annahme eintragen</button>') +
+      "</div>" +
+      '<details class="weitere"><summary>Weitere Optionen</summary><div class="btn-reihe">' +
       (d.nullErlaubt || id === "HG_nu" ? '<button class="btn" data-aktion="feld-null" data-feld="' + id + '">0 bestätigen</button>' : "") +
-      '<button class="btn link" data-aktion="feld-leeren" data-feld="' + id + '">Leeren</button></div>' +
+      '<button class="btn link" data-aktion="feld-leeren" data-feld="' + id + '">Feld leeren</button></div></details>' +
       '<p class="klein zweit">„Annahme“ = bewusst geschätzt. Abhängige Ampeln bleiben dann grau, bis der Wert belegt ist.</p></div>';
     return h;
   }
@@ -308,13 +312,29 @@
       var st = s[p.id] || "fehlt"; if (st === "fehlt") (p.optional ? optional : fehlt).push(p); else if (st === "erwaehnt") erwaehnt.push(p); }); });
     return { angaben: angaben, fehlt: fehlt, erwaehnt: erwaehnt, optional: optional };
   }
+  /* Liste für Makler/Verwaltung: Anrede, nach Empfänger gruppiert, als Fragen (Nutzertest W9T4, Punkt 8b) */
+  var FELD_FRAGEN = {
+    KP: "Wie hoch ist der Kaufpreis genau?", WFL: "Wie groß ist die Wohnfläche laut Wohnflächenberechnung?", KM: "Wie hoch ist die aktuelle Kaltmiete pro Monat?",
+    HG: "Wie hoch ist das Hausgeld pro Monat?", HG_nu: "Wie viel vom Hausgeld ist nicht auf den Mieter umlegbar (nicht umlagefähig)?", MAK: "Wie hoch ist die Maklerprovision für den Käufer?"
+  };
+  function empfaenger(p) {
+    var w = p.wer.split(" / ")[0];
+    if (/Verwaltung/.test(w)) return "verwaltung";
+    if (/Grundbuchamt|Notar|amt/i.test(w)) return "amt";
+    return "makler";
+  }
   function lueckenText() {
-    var o = Z.objekt, l = offeneLuecken(), t = "Offene Punkte zum Objekt " + (o.adresse || o.ort || "") + "\n";
-    if (l.angaben.length) t += "\nFehlende Angaben:\n" + l.angaben.map(function (d) { return "- " + (/^davon/.test(d.label) ? "Hausgeld – " : "") + d.label + (o.felder[d.id].zustand === "annahme" ? " (bisher nur geschätzt)" : ""); }).join("\n") + "\n";
-    if (l.erwaehnt.length) t += "\nIm Exposé erwähnt, aber nicht beigefügt – bitte zusenden:\n" + l.erwaehnt.map(function (p) { return "- " + p.name; }).join("\n") + "\n";
-    if (l.fehlt.length) t += "\nBitte zusenden:\n" + l.fehlt.map(function (p) { return "- " + p.name + " (" + p.wer + ")"; }).join("\n") + "\n";
-    if (l.optional.length) t += "\nFalls zutreffend:\n" + l.optional.map(function (p) { return "- " + p.name; }).join("\n") + "\n";
-    return t;
+    var o = Z.objekt, l = offeneLuecken(), obj = o.adresse || o.ort || "das Objekt";
+    var frage = function (p, erwaehnt) { return p.frage || (p.name + (erwaehnt ? " (im Exposé erwähnt, aber nicht beigefügt)" : "") + " – könnten Sie mir das bitte zusenden?"); };
+    var gruppen = { makler: [], verwaltung: [], amt: [] };
+    l.angaben.forEach(function (d) { gruppen.makler.push(FELD_FRAGEN[d.id] || ("Können Sie mir die Angabe „" + d.label + "“ nennen?")); });
+    l.erwaehnt.forEach(function (p) { gruppen[empfaenger(p)].push(frage(p, true)); });
+    l.fehlt.forEach(function (p) { gruppen[empfaenger(p)].push(frage(p, false)); });
+    var titel = { makler: "An den Makler bzw. Verkäufer", verwaltung: "Von der Hausverwaltung (gern auch über den Makler)", amt: "Vom Notar bzw. Grundbuchamt (oft über den Makler erhältlich)" };
+    var t = "Guten Tag,\n\nich interessiere mich für die Wohnung " + obj + ". Für meine Prüfung und das Gespräch mit meiner Bank habe ich noch folgende Fragen und benötige diese Unterlagen:\n";
+    ["makler", "verwaltung", "amt"].forEach(function (k) { if (gruppen[k].length) t += "\n" + titel[k] + ":\n" + gruppen[k].map(function (q, i) { return (i + 1) + ". " + q; }).join("\n") + "\n"; });
+    if (l.optional.length) t += "\nFalls zutreffend:\n" + l.optional.map(function (p) { return "- " + (p.frage || p.name); }).join("\n") + "\n";
+    return t + "\nVielen Dank im Voraus und freundliche Grüße\n";
   }
 
   V.luecken = function () {
@@ -329,7 +349,7 @@
     var kopf = '<div class="karte"><h3>Kurz zusammengefasst</h3><p class="klein" style="margin:0">' +
       "<b>" + l.angaben.length + "</b> fehlende Angabe" + (l.angaben.length === 1 ? "" : "n") + " · <b>" + (l.fehlt.length + l.erwaehnt.length) + "</b> Unterlagen anfordern (davon " + l.erwaehnt.length + " im Exposé erwähnt) · " +
       l.optional.length + " nur falls zutreffend · " + n.enthalten + " im Exposé enthalten · " + n.liegtvor + " von dir abgehakt</p>" +
-      '<details class="gruppe" style="margin-top:.75rem"><summary>Liste zum Kopieren (für Makler oder Verwaltung)</summary><div class="posten">' +
+      '<details class="gruppe" style="margin-top:.75rem"><summary>Anfrage zum Kopieren (an Makler, Verwaltung, Notar)</summary><div class="posten">' +
       '<label for="luecken-text" class="klein zweit">Ohne KI erstellt, du kannst den Text vor dem Kopieren ändern.</label><textarea id="luecken-text" rows="10" style="width:100%;font:inherit">' + esc(lueckenText()) + "</textarea>" +
       '<div class="btn-reihe"><button class="btn" data-aktion="luecken-kopieren">Text kopieren</button></div></div></details></div>';
     var angabenHTML = l.angaben.length ? '<div class="karte"><h3>Fehlende oder nur angenommene Angaben</h3><ul>' + l.angaben.map(function (d) {
@@ -345,12 +365,12 @@
     var txt = { enthalten: "im Exposé enthalten", erwaehnt: "erwähnt, nicht beigefügt", fehlt: "fehlt", liegtvor: "liegt vor (von dir bestätigt)" };
     return IFP.UNTERLAGEN.map(function (g, gi) {
       var nG = g.posten.filter(function (p) { return !p.optional; }).length, dG = g.posten.filter(function (p) { return !p.optional && s[p.id] === "liegtvor"; }).length;
-      return '<details class="gruppe"' + (gi < 2 || !mitStatus ? " open" : "") + "><summary>" + g.gruppe + " · " + esc(g.titel) + ' <span class="klein zweit">(' + dG + "/" + nG + " liegen vor)</span>" + (g.ki ? "" : ' <span class="badge korrigiert">geht nicht an die KI</span>') + '</summary><div class="posten">' +
+      return '<details class="gruppe"' + (gi < 2 || !mitStatus ? " open" : "") + "><summary>" + g.gruppe + " · " + esc(g.titel) + ' <span class="klein zweit">(' + dG + "/" + nG + " liegen vor)</span>" + (g.ki ? "" : ' <span class="badge korrigiert">geht nicht an die KI</span>') + '</summary><div class="posten">' + (g.hinweis ? '<p class="hinweis klein" style="margin-top:0">' + esc(g.hinweis) + "</p>" : "") +
         g.posten.map(function (p) {
           var st = s[p.id] || "fehlt";
           return '<div class="posten-zeile"><label class="checkzeile"><input type="checkbox" data-aktion="unterlage" data-id="' + p.id + '"' + (st === "liegtvor" ? " checked" : "") + '><span><b>' + esc(p.name) + "</b>" +
             (p.optional && st === "fehlt" ? ' <span class="status">falls zutreffend</span>' : "") + (mitStatus && g.ki && !(p.optional && st === "fehlt") ? ' <span class="status ' + st + '">' + txt[st] + "</span>" : (st === "liegtvor" ? ' <span class="status liegtvor">' + txt.liegtvor + "</span>" : "")) +
-            '<br><span class="klein zweit">Wofür: ' + esc(p.wofuer) + " · Wer liefert: " + esc(p.wer) + "</span>" +
+            '<br><span class="klein zweit">Wofür: ' + esc(p.wofuer) + " · Wer liefert: " + esc(p.wer) + "</span>" + (p.konkret ? '<br><span class="klein">Konkret: ' + esc(p.konkret) + "</span>" : "") +
             (fs[p.id] && mitStatus ? '<span class="zitat klein" style="display:block">„' + esc(fs[p.id]) + "“</span>" : "") + "</span></label></div>";
         }).join("") + "</div></details>";
     }).join("");
@@ -471,7 +491,7 @@
         formel: "Prüfung: Eigenkapital ≥ Kaufnebenkosten", zahlen: euro(x.EK) + " ≥ " + euro(w.KNK) + " → " + (amp.EK_KNK && amp.EK_KNK.status === "gruen" ? "ja" : "nein") },
       { id: "HUE", titel: "Haushaltsüberschuss", wert: euro(w.HUE), unter: "freiwillig, nur lokal", begriff: "Haushaltsüberschuss",
         formel: "Überschuss = Netto + Miete × Anrechnung − Lebenshaltung − Kredite − Wohnkosten − nicht umlagef. Hausgeld − Rate", zahlen: IFP.istZahl(w.HUE) ? "= " + euro(x.NE) + " + " + euro(x.KM) + " × " + proz(a.MA, 0) + " − " + euro(w.LHP) + " − " + euro(x.BR) + " − " + euro(x.WK) + " − " + euro(x.HG_nu) + " − " + euro(w.R) + "\n= " + euro(w.HUE) : hueGrund(x, w) },
-      { id: "KP_REF", titel: "Kaufpreis/m² vs. Markt", wert: euro(w.KP_m2), unter: "Referenz " + euro(x.RP_m2), begriff: "Kaufpreisfaktor",
+      { id: "KP_REF", titel: "Kaufpreis/m² vs. Markt", wert: euro(w.KP_m2), unter: "Referenz " + euro(x.RP_m2), begriff: "Kaufpreis/m² vs. Markt",
         formel: "Abweichung = Kaufpreis/m² ÷ Referenz − 1", zahlen: IFP.istZahl(x.RP_m2) ? "= " + euro(w.KP_m2) + " ÷ " + euro(x.RP_m2) + " − 1 = " + proz(w.KP_m2 / x.RP_m2 - 1, 1) : "Kein Referenzwert hinterlegt." },
       { id: "RS_RENTE", titel: "Restschuld bei Rente", wert: euro(w.RS_Rente, 0), unter: "freiwillig, nur lokal", begriff: "Restschuld",
         formel: "Restschuld nach (Rentenalter − Alter) × 12 Monaten", zahlen: IFP.istZahl(w.RS_Rente) ? "= " + euro(w.RS_Rente) : "Alter und Rentenbeginn nicht angegeben (freiwillig)." }
@@ -490,7 +510,7 @@
     if (!q) return "";
     if (q.status === "unvollstaendig") {
       var namen = q.fehlt.concat(q.annahmen).map(function (f) { var d = IFP.FELDER.filter(function (x) { return x.id === f; })[0]; return d ? (/^davon/.test(d.label) ? "Hausgeld – " : "") + d.label : (FEHLT_NAMEN[f] || f); });
-      return (q.wegenAnnahme ? "Annahme: " : "fehlt: ") + namen.join(", ");
+      return (q.wegenAnnahme ? "Annahme: " : "fehlt: ") + namen.join(", ") + (q.tendenz ? " · Tendenz: " + AMPEL[q.tendenz][1] : "");
     }
     if (q.status === "nichtbewertet") return q.text || "freiwillig – nicht ausgefüllt";
     return "";
@@ -556,7 +576,8 @@
       (Z.objekt.felder.HG_nu && Z.objekt.felder.HG_nu.zustand === "annahme" ? '<p class="klein"><span class="badge annahme">Annahme</span> Gerechnet mit dem geschätzten nicht umlagefähigen Hausgeld.</p>' : "") + "</div>" : "";
     var kopf = '<div class="objekt-zeile"><h2 style="flex:1;margin:0">Auswertung</h2><span class="klein zweit">Stand ' + new Date().toLocaleDateString("de-DE") + "</span></div>" +
       '<div class="karte flach"><div class="objekt-zeile"><b>Gesamt:</b> ' + ampel(g.status) + ' <span class="klein">' + g.gruen + " von " + g.bewertet + " bewerteten Prüfungen grün</span></div>" +
-      (g.status === "unvollstaendig" ? '<p class="klein" style="margin-top:.5rem">Kein Gesamturteil, solange Pflichtprüfungen offen sind: ' + esc(g.offen.join(", ")) + ".</p>" : "") +
+      (g.status === "unvollstaendig" ? '<p class="klein" style="margin-top:.5rem">Kein Gesamturteil, solange Pflichtprüfungen offen sind: ' + esc(g.offen.join(", ")) + "." +
+        (g.tendenz ? " <b>Tendenz mit Annahme: " + AMPEL[g.tendenz][1] + "</b> – belege den angenommenen Wert, dann wird daraus ein echtes Urteil." : "") + "</p>" : "") +
       '<div class="ampel-zusammen" style="margin-top:.5rem">' + ampel("rot", "(" + z.rot + ")") + ampel("gelb", "(" + z.gelb + ")") + ampel("gruen", "(" + z.gruen + ")") + ampel("unvollstaendig", "(" + z.unvollstaendig + ")") + "</div></div>";
     return nichtBestaetigt() + eigeneHinweis() + '<div class="mit-panel drei"><section>' + kopf + heroHTML(erg) + kacheln + hebel +
       '</section><aside class="panel immer" id="detail">' + kennzahlPanel(aktiv) + '</aside><div class="aktionen"><div class="btn-reihe"><a class="btn link" href="#bank">Alle Formeln: So rechnet die Bank</a><a class="btn link" href="#entwicklung">10-Jahres-Entwicklung</a><a class="btn link" href="#markt">Marktvergleich</a></div>' +
@@ -593,7 +614,7 @@
     return '<figure style="margin:0"><svg class="diagramm" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Diagramm: Prognosewert steigt von ' + euro(verlauf[0].wert, 0) + " auf " + euro(letzt.wert, 0) + ", Restschuld sinkt von " + euro(verlauf[0].restschuld, 0) + " auf " + euro(letzt.restschuld, 0) + '.">' + achse +
       '<path d="' + flaeche + '" fill="var(--gold)" fill-opacity=".12"/>' + jahre +
       '<path d="' + linie("wert") + '" fill="none" stroke="var(--gold)" stroke-width="3"/><path d="' + linie("restschuld") + '" fill="none" stroke="var(--text)" stroke-width="3" stroke-dasharray="6 4"/></svg>' +
-      '<figcaption class="klein legende"><span><i class="leg-gold"></i>Prognosewert</span><span><i class="leg-strich"></i>Restschuld</span><span><i class="leg-flaeche"></i>Dein Anteil am Objekt (Wert − Restschuld)</span><span class="zweit">Jahre 1–10, Achse beginnt nicht bei 0</span></figcaption></figure>';
+      '<figcaption class="klein legende"><span><i class="leg-gold"></i>Prognosewert</span><span><i class="leg-strich"></i>Restschuld</span><span><i class="leg-flaeche"></i>Dir gehörender Teil (Wert − Restschuld)</span><span class="zweit">Jahre 1–10, Achse beginnt nicht bei 0</span></figcaption></figure>';
   }
   V.entwicklung = function () {
     var erg = IFP.ergebnis(), w = erg.werte, a = IFP.annahmenFlach(Z.einstellungen.annahmen);
@@ -604,7 +625,8 @@
       (hgAnnahme ? ", nicht umlagefähiges Hausgeld ist geschätzt" : "") + '. Restschuld und Tilgung folgen aus dem Darlehen bei gleichem Zins. <a href="#einstellungen">Annahmen ändern</a></p>';
     var kpi = '<div class="hero"><div class="grosse-zahlen">' +
       "<div>Vermögenszuwachs nach 10 J.<b>" + euro(w.VZ_10, 0) + "</b></div><div>Restschuld nach 10 J.<b>" + euro(letzt.restschuld, 0) + "</b></div>" +
-      "<div>Summe Cashflow 10 J.<b>" + euro(letzt.cfKum, 0) + "</b></div><div>Dein Anteil nach 10 J.<b>" + euro(letzt.wert - letzt.restschuld, 0) + "</b></div></div></div>";
+      "<div>Summe Cashflow 10 J.<b>" + euro(letzt.cfKum, 0) + "</b></div><div>Wert minus Restschuld nach 10 J.<b>" + euro(letzt.wert - letzt.restschuld, 0) + "</b></div></div></div>" +
+      '<div class="hinweis klein"><b>Zwei Zahlen, zwei Fragen:</b><br><b>Vermögenszuwachs</b> = Was gewinnst du gegenüber heute dazu? Wertsteigerung plus Tilgung, abzüglich Zuzahlungen, Kaufnebenkosten und Renovierung.<br><b>Wert minus Restschuld</b> = Was gehört dir nach 10 Jahren an der Wohnung? Darin steckt auch dein eingesetztes Eigenkapital – deshalb ist die Zahl größer.</div>';
     var tabelle = '<div class="karte"><h3>Jahr für Jahr</h3><p class="klein zweit nur-mobil">Tabelle seitlich wischen für alle Spalten.</p><div class="tabelle-wrap" tabindex="0" role="region" aria-label="Jahresverlauf, seitlich scrollbar"><table class="verlauf"><caption class="sr-only">Jahresverlauf</caption><thead><tr><th scope="col">Jahr</th><th class="zahl" scope="col">Jahresmiete (Prognose)</th><th class="zahl" scope="col">Restschuld</th><th class="zahl" scope="col">getilgt</th><th class="zahl" scope="col">Wert (Prognose)</th><th class="zahl" scope="col">Cashflow</th><th class="zahl" scope="col">kumuliert</th></tr></thead><tbody>' +
       w.verlauf.map(function (z) { return '<tr><th scope="row">' + z.jahr + '</th><td class="zahl">' + euro(z.miete, 0) + '</td><td class="zahl">' + euro(z.restschuld, 0) + '</td><td class="zahl">' + euro(z.getilgt, 0) + '</td><td class="zahl">' + euro(z.wert, 0) + '</td><td class="zahl">' + euro(z.cf, 0) + '</td><td class="zahl">' + euro(z.cfKum, 0) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
       '<p class="klein zweit">Auf volle Euro gerundet. Genaue Werte stehen in der Präsentation für die Bank.</p></div>';
@@ -624,9 +646,23 @@
     return "<h2>Marktvergleich " + esc(o.ort) + "</h2>" +
       zeile("Kaufpreis pro m²", w.KP_m2, ref.kaufpreisM2, euro(w.KP_m2) + "/m²") +
       zeile("Miete pro m² (Ist / nötig)", w.KM_m2, ref.mieteM2, euro(w.KM_m2) + " / " + euro(w.KM_noetig_m2)) +
-      zeile("Angebotsmiete (nur Information)", null, ref.angebotsmieteM2, "–") +
+      zeile("Angebotsmiete (nur Information)", null, ref.angebotsmieteM2, "–") + marktEinordnung(w, ref) +
       '<div class="hinweis ki"><b>KI-Einordnung</b> <span class="badge demo">noch nicht angebunden</span><br><span class="klein">Die KI ordnet später nur diese hinterlegten Werte ein und nennt Unsicherheiten. Sie erfindet keine Vergleichspreise.</span></div>';
   };
+
+  /* Einordnung der Abweichungen (Nutzertest W9T4, Punkt 8b) – feste Regeln, keine KI, keine Rechtsberatung */
+  function marktEinordnung(w, ref) {
+    var t = [], pz = function (v) { return (v > 0 ? "+" : "") + zahl(v * 100, 0) + " %"; };
+    if (IFP.istZahl(w.KP_m2) && ref.kaufpreisM2) {
+      var dk = w.KP_m2 / ref.kaufpreisM2.wert - 1;
+      t.push("<li><b>Kaufpreis " + pz(dk) + " zum Vergleich:</b> " + (dk <= -0.1 ? "deutlich günstiger. Prüfe, warum – oft stecken Zustand, Lage im Haus oder anstehende Sanierungen dahinter." : dk >= 0.1 ? "deutlich teurer. Die Bank setzt den Wert eher vorsichtiger an – gutes Argument für eine Preisverhandlung." : "im üblichen Rahmen.") + "</li>");
+    }
+    if (IFP.istZahl(w.KM_m2) && ref.mieteM2) {
+      var dm = w.KM_m2 / ref.mieteM2.wert - 1;
+      t.push("<li><b>Ist-Miete " + pz(dm) + " zur ortsüblichen Vergleichsmiete:</b> " + (dm >= 0.1 ? "Die Miete liegt schon deutlich über dem Mietspiegel. Weitere Mieterhöhungen sind dann kaum möglich, und bei einem Mieterwechsel kann eine niedrigere Miete drohen (je nach Ort z. B. Mietpreisbremse). Rechne lieber mit der Vergleichsmiete gegen." : dm <= -0.1 ? "Die Miete liegt unter dem Mietspiegel. Es gibt Luft nach oben, Erhöhungen sind aber nur schrittweise und in gesetzlichen Grenzen möglich." : "im üblichen Rahmen.") + "</li>");
+    }
+    return t.length ? '<div class="karte"><h3>Was bedeutet das?</h3><ul>' + t.join("") + '</ul><p class="klein zweit" style="margin:0">Feste Regeln der App (Abweichung ab 10 %), keine Rechtsberatung. Grenzen und Regeln zur Miethöhe hängen vom Ort ab.</p></div>' : "";
+  }
 
   /* Offene Punkte für die Präsentation (US-06 AK 1, E5): jede Ursache nur einmal */
   function offenePunkte() {
@@ -650,7 +686,7 @@
       "<h3>" + esc(o.adresse || o.ort || "Objekt ohne Namen") + "</h3>" +
       '<p class="klein zweit">' + [x.WFL ? zahl(x.WFL, 1) + " m²" : "", o.felder.BJ && o.felder.BJ.wert ? "Baujahr " + o.felder.BJ.wert : "", o.bundesland || ""].filter(Boolean).join(" · ") + "</p>" +
       '<div class="sv-zahlen"><div>Kaufpreis<b>' + euro(x.KP, 0) + "</b></div><div>Darlehen<b>" + euro(w.D, 0) + "</b></div><div>Rate / Monat<b>" + euro(w.R) + "</b></div><div>Cashflow / Monat<b>" + euro(w.CF) + "</b></div></div>" +
-      '<p style="margin:.5rem 0"><b>Gesamt:</b> ' + ampel(erg.gesamt.status) + ' <span class="klein">' + erg.gesamt.gruen + " von " + erg.gesamt.bewertet + " Prüfungen grün</span></p>" +
+      '<p style="margin:.5rem 0"><b>Gesamt:</b> ' + ampel(erg.gesamt.status) + ' <span class="klein">' + erg.gesamt.gruen + " von " + erg.gesamt.bewertet + " Prüfungen grün" + (erg.gesamt.tendenz ? " · Tendenz mit Annahme: " + AMPEL[erg.gesamt.tendenz][1] : "") + "</span></p>" +
       '<ul class="sv-ampeln">' + ks.map(function (k) { return "<li><span>" + esc(k.titel) + "</span><span>" + k.wert + " " + (k.ampel ? ampel(k.ampel.status) : "") + "</span></li>"; }).join("") + "</ul>" +
       '<p class="klein zweit" style="margin-top:.5rem">Erstellt mit Immo Finanz Pilot am ' + new Date().toLocaleDateString("de-DE") + " · keine Finanzberatung · Grundlage: Formel-Spezifikation " + IFP.SPEZ + "</p></div>";
   }
@@ -767,11 +803,12 @@
   }
 
   V.transparenz = function () {
-    return '<h2>Über diesen Prototyp</h2><div class="karte"><p><b>Immo Finanz Pilot</b> ist ein Prototyp aus einem Abschlussprojekt der Weiterbildung „KI-Anwendungsspezialist“ (Syntax Institut). Version ' + IFP.VERSION + ".</p>" +
+    return '<div class="karte"><h2 style="margin-top:0">Kurz gesagt</h2><ul><li><b>Deine Zahlen zu Einkommen, Haushalt und Alter bleiben auf deinem Gerät.</b></li><li>Nur der Text des Exposés geht – wenn du zustimmst – an die KI. Die KI liest nur Angaben aus und rechnet nie.</li><li>Gespeicherte Objekte liegen auf einem Server in Frankfurt, ohne deinen Namen, und werden nach 6 Monaten automatisch gelöscht.</li><li>Du kannst jederzeit alles herunterladen oder löschen: <a href="#daten">Meine Daten</a>.</li></ul><p class="klein zweit" style="margin:0">Die Details stehen unten.</p></div>' +
+      '<h2>Über diesen Prototyp</h2><div class="karte"><p><b>Immo Finanz Pilot</b> ist ein Prototyp aus einem Abschlussprojekt der Weiterbildung „KI-Anwendungsspezialist“ (Syntax Institut). Version ' + IFP.VERSION + ".</p>" +
       "<p><b>Anbieter / Impressum:</b><br>Mike Reichenbach<br>Werrabronner Straße 8<br>76229 Karlsruhe<br>E-Mail: <a href=\"mailto:mike.reichenbach@tn.syntax-institut.de\">mike.reichenbach@tn.syntax-institut.de</a></p><p><a href=\"../impressum.html\">Impressum</a> · <a href=\"../datenschutz.html\">Datenschutzerklärung</a></p>" +
       "<p><b>Was die App nicht ist:</b> keine Finanz-, Steuer- oder Rechtsberatung · keine Darlehensvermittlung · verkauft nichts · verdient nicht an Finanzierungen.</p></div>" +
-      '<h2>Datenfluss</h2><div class="datenfluss"><div class="box"><b>1 · Dein Gerät</b><br><span class="klein">PDF wird hier in Text umgewandelt</span></div><div class="box"><b>2 · Make</b><br><span class="klein">leitet nur den Exposé-Text weiter</span></div><div class="box"><b>3 · KI-Dienst (Gemini)</b><br><span class="klein">liest Angaben aus, rechnet nie</span></div><div class="box lokal"><b>Bleibt auf dem Gerät</b><br><span class="klein">Einkommen, Haushalt, Alter, Profil, Fotos</span></div></div>' +
-      '<div class="karte" style="margin-top:1rem"><h3>Speicherung</h3><ul><li>Entwurf und Einstellungen: im Browser dieses Geräts.</li><li>„Meine Objekte“: in <b>Supabase (Region EU, Frankfurt)</b> unter einer <b>pseudonymen Kennung</b> ohne Namen und ohne Login – nur Objekt- und Finanzierungsdaten mit kurzen Belegstellen aus dem Exposé (max. ca. 120 Zeichen). Jede Kennung sieht nur ihre eigenen Objekte. <b>Automatische Löschung 6 Monate nach der letzten Änderung</b>; vorher jederzeit unter „Meine Daten“.</li><li>Exposé-Text: wird von der App nicht gespeichert, nur kurze Belegstellen (siehe oben). Nach Anbindung der KI kann er kurzzeitig im Make-Ausführungsprotokoll stehen; die Frist wird vor der Live-Anbindung festgelegt und hier genannt.</li><li>KI-Dienst: geplant ist Google Gemini über Make im <b>bezahlten Tarif mit Datenschutz-Zusatz – Eingaben werden nicht zum Training genutzt</b>. Trotzdem geht nur der Exposé-Text an die KI, den du vorher sehen und kürzen kannst – nie Einkommen, Haushalt, Alter, Profil oder Fotos. Im Prototyp ist die Live-KI noch nicht angeschlossen (Demo-Modus).</li><li>Rechenregeln: Formel-Spezifikation ' + IFP.SPEZ + ' – alle Werte rechnet die App selbst.</li></ul><p><a href="#daten">Daten exportieren oder löschen</a> · <a href="../datenschutz.html">Datenschutzerklärung</a></p></div>' +
+      '<h2>Datenfluss</h2><div class="datenfluss"><div class="box"><b>1 · Dein Gerät</b><br><span class="klein">PDF wird hier in Text umgewandelt</span></div><div class="box"><b>2 · Make</b> <span class="klein">(Automatisierungs-Dienst)</span><br><span class="klein">leitet nur den Exposé-Text weiter</span></div><div class="box"><b>3 · KI-Dienst (Gemini)</b><br><span class="klein">liest Angaben aus, rechnet nie</span></div><div class="box lokal"><b>Bleibt auf dem Gerät</b><br><span class="klein">Einkommen, Haushalt, Alter, Profil, Fotos</span></div></div>' +
+      '<div class="karte" style="margin-top:1rem"><h3>Speicherung</h3><ul><li>Entwurf und Einstellungen: im Browser dieses Geräts.</li><li>„Meine Objekte“: in <b>Supabase</b> (Datenbank-Dienst, Server in Frankfurt) unter einer <b>pseudonymen Kennung</b> (zufällige Nummer statt Name, ohne Login) – nur Objekt- und Finanzierungsdaten mit kurzen Belegstellen aus dem Exposé (max. ca. 120 Zeichen). Jede Kennung sieht nur ihre eigenen Objekte. <b>Automatische Löschung 6 Monate nach der letzten Änderung</b>; vorher jederzeit unter „Meine Daten“.</li><li>Exposé-Text: wird von der App nicht gespeichert, nur kurze Belegstellen (siehe oben). Nach Anbindung der KI kann er kurzzeitig im Make-Ausführungsprotokoll stehen; die Frist wird vor der Live-Anbindung festgelegt und hier genannt.</li><li>KI-Dienst: geplant ist Google Gemini über Make im <b>bezahlten Tarif mit Datenschutz-Zusatz – Eingaben werden nicht zum Training genutzt</b>. Trotzdem geht nur der Exposé-Text an die KI, den du vorher sehen und kürzen kannst – nie Einkommen, Haushalt, Alter, Profil oder Fotos. Im Prototyp ist die Live-KI noch nicht angeschlossen (Demo-Modus).</li><li>Rechenregeln: in der Projektdokumentation offengelegt (Formel-Spezifikation, Stand ' + IFP.SPEZ.replace("03 ", "") + ') – alle Werte rechnet die App selbst.</li></ul><p><a href="#daten">Daten exportieren oder löschen</a> · <a href="../datenschutz.html">Datenschutzerklärung</a></p></div>' +
       '<div class="karte"><h3>Was die KI tut – und was nicht</h3><ul><li>Liest Angaben aus dem Exposé und zeigt die Fundstelle im Originalwortlaut.</li><li>Zeigt fehlende Unterlagen und Widersprüche.</li><li>Erklärt berechnete Kennzahlen und schlägt bearbeitbare Texte vor.</li><li><b>Rechnet nie</b>, erfindet keine fehlenden Werte, Vergleichspreise oder Fundstellen.</li></ul><p class="klein">KI-Inhalte sind gekennzeichnet. Diese Kennzeichnung ist eine Produktentscheidung und keine Bestätigung rechtlicher Konformität.</p></div>' +
       '<div class="karte flach"><h3>Haftung</h3><p class="klein">Alle Berechnungen beruhen auf deinen Eingaben und vereinfachten Modellannahmen. Keine Gewähr für Richtigkeit oder Bankzusagen.</p></div>';
   };
@@ -797,6 +834,7 @@
   function render() {
     var r = route();
     if (r === "einwilligung" && Z.einstellungen.kiEinwilligung !== null) r = "import";
+    if (letzteRoute === "onboarding" && r !== "onboarding" && !Z.einstellungen.onboardingGesehen) { Z.einstellungen.onboardingGesehen = true; onboardingSchritt = 0; speichern(); } // Nutzertest W9T4, Punkt 8a
     var neueSeite = r !== letzteRoute; letzteRoute = r;
     if (r !== "pruefen") rueckZiel = null;
     rahmen(r, V[r]());
@@ -960,7 +998,7 @@
       case "glossar": dialog(el.dataset.begriff, "<p>" + esc(IFP.GLOSSAR[el.dataset.begriff] || "") + "</p>", [{ text: "Schließen", primaer: true }]); break;
       case "erklaeren": {
         var box = document.getElementById("erkl-" + el.dataset.id);
-        if (box) box.innerHTML = '<div class="hinweis ki"><b>Standarderklärung</b> <span class="badge demo">KI noch nicht angebunden</span><p class="klein" style="margin:.25rem 0 0">' + esc(IFP.GLOSSAR[{ CF: "Cashflow", DSCR: "DSCR", LTV_BANK: "Beleihungsauslauf", MIETE_REF: "Nötige Miete/m²", KPF: "Kaufpreisfaktor", BMR: "Bruttomietrendite", EK_KNK: "Kaufnebenkosten", HUE: "Haushaltsüberschuss", KP_REF: "Kaufpreisfaktor", RS_RENTE: "Restschuld" }[el.dataset.id]] || "") + "</p></div>";
+        if (box) box.innerHTML = '<div class="hinweis ki"><b>Standarderklärung</b> <span class="badge demo">KI noch nicht angebunden</span><p class="klein" style="margin:.25rem 0 0">' + esc(IFP.GLOSSAR[{ CF: "Cashflow", DSCR: "DSCR", LTV_BANK: "Beleihungsauslauf", MIETE_REF: "Nötige Miete/m²", KPF: "Kaufpreisfaktor", BMR: "Bruttomietrendite", EK_KNK: "Kaufnebenkosten", HUE: "Haushaltsüberschuss", KP_REF: "Kaufpreis/m² vs. Markt", RS_RENTE: "Restschuld" }[el.dataset.id]] || "") + "</p></div>";
         break; }
       case "objekt-speichern":
         if (!o.bestaetigt) { toast("Bitte zuerst die Werte bestätigen."); break; }
