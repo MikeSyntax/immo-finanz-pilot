@@ -716,9 +716,21 @@
       eingabeFeld("NE", "Haushaltsnettoeinkommen", h.NE, "€/Monat", null, null, "haus") + eingabeFeld("BR", "Bestehende Kreditraten", h.BR, "€/Monat", "0 eintragen, wenn keine.", null, "haus") +
       eingabeFeld("WK", "Eigene Wohnkosten (Miete/Rate)", h.WK, "€/Monat", null, null, "haus") + eingabeFeld("ERW", "Erwachsene im Haushalt", h.ERW, "Personen", null, null, "haus") +
       eingabeFeld("KINDER", "Kinder", h.KINDER, "Kinder", null, null, "haus") + "</div></div>" +
+      '<div class="karte"><h3>Alter und Rente (freiwillig)</h3><p class="klein zweit">Für die Kennzahl „Restschuld bei Rente“. Dieselben Felder findest du auch im Schritt Finanzierung – die Werte sind dort und hier gleich.</p><div class="raster-2">' +
+      eingabeFeld("ALT", "Dein Alter heute", Z.lokal.alter.ALT, "Jahre", "Bleibt nur auf diesem Gerät.", null, "alter") +
+      eingabeFeld("RENT", "Geplanter Rentenbeginn mit", Z.lokal.alter.RENT, "Jahren", "Für die Restschuld bei Rentenbeginn.", null, "alter") + "</div></div>" +
       '<div class="karte"><h3>Investor-Kurzprofil für die Präsentation (optional)</h3><label class="checkzeile"><input type="checkbox" data-aktion="profil-an"' + (p.aktiv ? " checked" : "") + "><span>Kurzprofil in die Präsentation aufnehmen</span></label>" +
-      ["name:Name", "objekte:Bestehende Objekte (Anzahl, Orte)", "mieteinnahmen:Mieteinnahmen pro Jahr", "bank:Hausbank seit", "notiz:Kurze Notiz"].map(function (x) { var k = x.split(":"); return '<div class="feld"><label for="pr-' + k[0] + '">' + k[1] + '</label><input id="pr-' + k[0] + '" type="text" data-bereich="profil" data-feld="' + k[0] + '" value="' + esc(p[k[0]]) + '"></div>'; }).join("") + "</div>";
+      ["name:Name", "objekte:Bestehende Objekte (Anzahl, Orte)", "mieteinnahmen:Mieteinnahmen pro Jahr", "bank:Hausbank seit", "notiz:Kurze Notiz"].map(function (x) { var k = x.split(":"); return '<div class="feld"><label for="pr-' + k[0] + '">' + k[1] + '</label><input id="pr-' + k[0] + '" type="text" data-bereich="profil" data-feld="' + k[0] + '" value="' + esc(p[k[0]]) + '"></div>'; }).join("") + "</div>" +
+      haushaltWeiter();
   };
+
+  function haushaltWeiter() {
+    var o = Z.objekt, hatErgebnis = o && o.bestaetigt;
+    return '<div class="btn-reihe">' + (hatErgebnis
+      ? '<button class="btn primaer" data-aktion="gehe" data-ziel="auswertung">Weiter zur Auswertung</button><button class="btn" data-aktion="gehe" data-ziel="finanzierung">Zurück zur Finanzierung</button>'
+      : '<button class="btn primaer" data-aktion="gehe" data-ziel="start">Weiter zu „Objekt prüfen“</button>') +
+      '</div><p class="klein zweit">Deine Eingaben werden automatisch auf diesem Gerät gespeichert.</p>';
+  }
 
   V.transparenz = function () {
     return '<h2>Über diesen Prototyp</h2><div class="karte"><p><b>Immo Finanz Pilot</b> ist ein Prototyp aus einem Abschlussprojekt der Weiterbildung „KI-Anwendungsspezialist“ (Syntax Institut). Version ' + IFP.VERSION + ".</p>" +
