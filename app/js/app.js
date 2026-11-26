@@ -65,6 +65,20 @@
   };
   function navIcon(k) { return '<svg class="nav-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (NAV_ICONS[k] || "") + "</svg>"; }
 
+  /* Am Ende jeder aufklappbaren Gruppe einen „Zuklappen“-Link ergänzen – praktisch bei langen Listen (Rückmeldung Mike, 26.11.2026) */
+  function zuklappenErgaenzen(wurzel) {
+    wurzel.querySelectorAll("details.gruppe > .posten").forEach(function (po) {
+      if (po.querySelector(":scope > .zuklappen")) return;
+      var z = document.createElement("div"); z.className = "zuklappen";
+      z.innerHTML = '<button type="button" class="btn link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>Zuklappen</button>';
+      z.firstChild.onclick = function () {
+        var d = po.parentElement, su = d.querySelector("summary"); d.open = false;
+        if (su) { su.focus({ preventScroll: true }); var r = su.getBoundingClientRect(); if (r.top < 0 || r.top > window.innerHeight) su.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      };
+      po.appendChild(z);
+    });
+  }
+
   function rahmen(r, inhalt) {
     var s = SEITEN[r];
     document.title = s.titel + " · Immo Finanz Pilot";
@@ -91,6 +105,7 @@
     document.getElementById("demo-banner").hidden = !Z.einstellungen.demoModus;
     var main = document.getElementById("inhalt");
     main.innerHTML = inhalt;
+    zuklappenErgaenzen(main);
     main.focus({ preventScroll: true });
   }
 
@@ -741,7 +756,7 @@
   }
 
   /* ---------- Dialoge & Meldungen ---------- */
-  function toast(t) { var d = document.createElement("div"); d.className = "toast"; d.setAttribute("role", "status"); d.textContent = t; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 3500); }
+  function toast(t) { document.querySelectorAll(".toast").forEach(function (x) { x.remove(); }); var d = document.createElement("div"); d.className = "toast"; d.setAttribute("role", "status"); d.textContent = t; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 3500); }
   function dialog(titel, html, knoepfe) {
     var d = document.getElementById("dialog");
     d.innerHTML = '<div class="d-inhalt"><h2 id="d-titel">' + esc(titel) + "</h2>" + html + '</div><div class="d-fuss">' + knoepfe.map(function (k, i) { return '<button class="btn' + (k.gefahr ? " gefahr" : k.primaer ? " primaer" : "") + '" data-i="' + i + '">' + esc(k.text) + "</button>"; }).join("") + "</div>";

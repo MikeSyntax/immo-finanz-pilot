@@ -175,6 +175,19 @@ td.zahl, th.zahl { text-align: right; font-variant-numeric: tabular-nums; white-
 details.gruppe { border: 1px solid var(--linie); border-radius: var(--radius); margin-bottom: .75rem; background: var(--bg); }
 details.gruppe summary { min-height: 56px; padding: .75rem 1rem; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: .5rem; }
 details.gruppe .posten { padding: 0 1rem 1rem; }
+/* Auf-/Zuklappen sichtbar machen (Rückmeldung Mike, 26.11.2026): goldener Pfeil + Wort rechts, Hover-Fläche, „Zuklappen“ am Ende */
+details.gruppe summary { list-style: none; border-radius: var(--radius); }
+details.gruppe summary::-webkit-details-marker { display: none; }
+details.gruppe summary:hover { background: var(--flaeche); }
+details.gruppe summary::after { content: "anzeigen"; content: "anzeigen" / ""; margin-left: auto; flex: none; padding: .25rem 1.75rem .25rem .75rem; font-size: .875rem; font-weight: 600; color: var(--gold-text); background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A6D1F' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right .1rem center / 20px 20px; }
+details.gruppe[open] summary::after { content: "ausblenden"; content: "ausblenden" / ""; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A6D1F' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 15 6-6 6 6'/%3E%3C/svg%3E"); }
+details.gruppe[open] summary { border-bottom: 1px solid var(--linie); border-bottom-left-radius: 0; border-bottom-right-radius: 0; margin-bottom: .75rem; }
+:root[data-theme="dunkel"] details.gruppe summary::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E0C060' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+:root[data-theme="dunkel"] details.gruppe[open] summary::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E0C060' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 15 6-6 6 6'/%3E%3C/svg%3E"); }
+@media (max-width: 480px) { details.gruppe summary::after { content: ""; padding: .75rem 0 .75rem 1.5rem; } details.gruppe[open] summary::after { content: ""; } }
+.zuklappen { display: flex; justify-content: flex-end; margin-top: .5rem; }
+.zuklappen .btn.link { display: inline-flex; align-items: center; gap: .35rem; }
+.zuklappen svg { width: 18px; height: 18px; }
 .posten-zeile { border-top: 1px solid var(--linie); padding: .75rem 0; }
 .status { font-size: .8125rem; font-weight: 700; padding: .125rem .5rem; border-radius: 999px; }
 .status.enthalten, .status.liegtvor { background: var(--gruen-bg); color: var(--gruen); }
