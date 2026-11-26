@@ -159,9 +159,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--fokus); outline:
 .hero .grosse-zahlen { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .75rem; margin-top: .75rem; }
 .hero .grosse-zahlen div { background: var(--bg); border-radius: 10px; padding: .5rem .75rem; }
 .hero .grosse-zahlen b { display: block; font-size: 1.25rem; }
-.ergebnisleiste { position: sticky; bottom: 64px; z-index: 25; background: var(--text); color: var(--bg); display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: .5rem 1rem; border-radius: 12px 12px 0 0; margin: 1rem -1rem 0; font-size: .9375rem; }
-.ergebnisleiste b { font-size: 1.0625rem; }
-.ergebnisleiste a { color: var(--bg); min-height: 44px; display: inline-flex; align-items: center; font-weight: 700; }
 
 /* Rechenwege, Tabellen */
 .rechenweg { font-family: var(--mono); font-size: .875rem; background: var(--flaeche); border-radius: 10px; padding: .75rem; overflow-x: auto; white-space: pre-wrap; }
@@ -250,11 +247,10 @@ dialog .d-fuss { padding: 0 1.25rem 1.25rem; display: flex; flex-wrap: wrap; gap
   .mit-panel.drei { grid-template-columns: minmax(0, 1fr) 400px; grid-template-areas: "a p" "b p"; }
   .mit-panel.drei > section { grid-area: a; } .mit-panel.drei > aside { grid-area: p; } .mit-panel.drei > .aktionen { grid-area: b; }
   .nur-mobil { display: none !important; }
-  .ergebnisleiste { bottom: 0; margin: 1rem 0 0; border-radius: 12px; }
   .toast { bottom: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-@media print { .tabbar, .seitenleiste, .kopf, .demo-banner, .ergebnisleiste { display: none !important; } }
+@media print { .tabbar, .seitenleiste, .kopf, .demo-banner { display: none !important; } }
 
 /* Rechenweg-Tabellen (Phase 3, S07) */
 .rw-tab { width: 100%; border-collapse: collapse; font-size: .9375rem; font-variant-numeric: tabular-nums; }
@@ -265,7 +261,6 @@ dialog .d-fuss { padding: 0 1.25rem 1.25rem; display: flex; flex-wrap: wrap; gap
 .rw-tab tr.trenn td { height: .5rem; }
 .hero .grosse-zahlen b { white-space: nowrap; }
 @media (min-width: 834px) { .panel .hero .grosse-zahlen { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-.ergebnisleiste b { white-space: nowrap; }
 .gruppen-titel { margin: 1.25rem 0 .5rem; font-size: 1rem; }
 .chip-liste { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
 .chip-liste a { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: .25rem .6rem; border: 1px solid var(--linie); border-radius: 999px; color: var(--text); text-decoration: none; font-size: .875rem; background: var(--bg); }

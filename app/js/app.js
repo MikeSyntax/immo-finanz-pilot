@@ -427,16 +427,11 @@
     var ergebnisKarte = heroHTML(erg) + cfHinweis + '<div class="karte flach"><h3>Rechenweg Kapitalbedarf</h3>' + kap +
       (mon ? '<h3 style="margin-top:1rem">Rechenweg Monatsbelastung</h3>' + mon : "") + anschluss + "</div>";
     return nichtBestaetigt() + '<div class="mit-panel drei"><section>' + form + '</section><aside class="panel immer">' + ergebnisKarte + '</aside><div class="aktionen">' +
-      '<div class="btn-reihe"><button class="btn primaer" data-aktion="gehe" data-ziel="auswertung">Zur Auswertung</button><a class="btn" href="#haushalt">Haushalt ergänzen (freiwillig)</a></div>' +
-      ergebnisleiste(erg) + "</div></div>";
+      '<div class="btn-reihe"><button class="btn primaer" data-aktion="gehe" data-ziel="auswertung">Zur Auswertung</button><a class="btn" href="#haushalt">Haushalt ergänzen (freiwillig)</a></div>' + "</div></div>";
   };
 
   function nichtBestaetigt() {
     return Z.objekt.bestaetigt ? "" : '<div class="hinweis warnung"><b>Werte noch nicht bestätigt.</b> Gerechnet wird nur mit bestätigten Angaben – unsichere Werte bleiben außen vor. <a href="#pruefen">Zur Prüfmaske</a></div>';
-  }
-  function ergebnisleiste(erg) {
-    var w = erg.werte;
-    return '<div class="ergebnisleiste nur-mobil" aria-live="polite"><span>Rate <b>' + euro(w.R) + "</b></span><span>Cashflow <b>" + euro(w.CF) + '</b></span><a href="#auswertung">Auswertung ›</a></div>';
   }
 
   /* Kennzahlen-Definitionen für Kacheln und "So rechnet die Bank" */
