@@ -655,11 +655,11 @@
       if (!l.length) { c.innerHTML = '<div class="karte flach" style="text-align:center"><h2>Noch keine Objekte</h2><p>Prüfe ein Objekt und tippe in der Auswertung auf „Objekt speichern“.</p><a class="btn primaer" href="#start">Objekt prüfen</a></div>'; return; }
       c.innerHTML = l.map(function (o) {
         return '<div class="karte"><div class="objekt-zeile"><div style="flex:1"><h3 style="margin:0">' + esc(o.titel) + '</h3><span class="klein zweit">' + euro(o.kp, 0) + " · gespeichert " + new Date(o.datum).toLocaleDateString("de-DE") + "</span></div>" + ampel(o.gesamt || "unvollstaendig") +
-          '</div><p class="klein">' + (o.gruen || 0) + " von " + (o.bewertet || 0) + ' Prüfungen grün</p><div class="btn-reihe"><button class="btn primaer" data-aktion="objekt-oeffnen" data-id="' + esc(o.id) + '">Öffnen</button><button class="btn" data-aktion="objekt-loeschen" data-id="' + esc(o.id) + '">Löschen</button></div></div>';
+          '</div><p class="klein">' + (o.gruen || 0) + " von " + (o.bewertet || 0) + ' Prüfungen grün</p><div class="btn-reihe"><button class="btn primaer" data-aktion="objekt-oeffnen" data-id="' + esc(o.id) + '">Öffnen</button><button class="btn gefahr" data-aktion="objekt-loeschen" data-id="' + esc(o.id) + '">Löschen</button></div></div>';
       }).join("");
     }).catch(function (e) {
       var c = document.getElementById("objekt-liste"); if (!c) return;
-      c.innerHTML = '<div class="hinweis fehler" role="alert"><b>„Meine Objekte“ konnten nicht geladen werden.</b><br>' + esc(e.message) + '<div class="btn-reihe"><button class="btn" data-aktion="neu-laden">Nochmal versuchen</button><a class="btn link" href="#daten">Verbindung prüfen</a></div></div>';
+      c.innerHTML = '<div class="hinweis fehler" role="alert"><b>„Meine Objekte“ konnten nicht geladen werden.</b><br>' + esc(e.message) + '<div class="btn-reihe"><button class="btn" data-aktion="neu-laden">Nochmal versuchen</button><a class="btn" href="#daten">Verbindung prüfen</a></div></div>';
     });
   };
 
@@ -720,7 +720,7 @@
     return '<div class="karte"><h3>Daten exportieren</h3><p>Lädt alle in dieser App gespeicherten Daten als JSON-Datei (maschinenlesbares Textformat) herunter – auch die lokalen.</p><button class="btn" data-aktion="export">„Meine Daten“ herunterladen</button></div>' +
       '<div class="karte"><h3>Speicherung prüfen</h3><p>Speicherort für „Meine Objekte“: <b>' + speicherOrt() + '</b></p><button class="btn" data-aktion="verbindung-pruefen">Verbindung prüfen</button><div id="pruef-ergebnis" aria-live="polite"></div></div>' +
       '<div class="karte"><h3>KI-Zustimmung</h3><p>Aktueller Stand: <b>' + (ein === true ? "erteilt" : ein === false ? "abgelehnt" : "noch nicht gefragt") + "</b></p>" + (ein !== null ? '<button class="btn" data-aktion="ki-widerruf">Zustimmung zurücksetzen</button>' : "") + "</div>" +
-      '<div class="karte"><h3>Alles löschen</h3><p>Löscht Entwurf, Einstellungen und lokale Daten auf diesem Gerät sowie deine pseudonyme Kennung samt aller „Meine Objekte“ in Supabase.</p><button class="btn" data-aktion="alles-loeschen">Alle Daten löschen</button></div>';
+      '<div class="karte"><h3>Alles löschen</h3><p>Löscht Entwurf, Einstellungen und lokale Daten auf diesem Gerät sowie deine pseudonyme Kennung samt aller „Meine Objekte“ in Supabase.</p><button class="btn gefahr" data-aktion="alles-loeschen">Alle Daten löschen</button></div>';
   };
 
   V.mehr = function () {
@@ -744,7 +744,7 @@
   function toast(t) { var d = document.createElement("div"); d.className = "toast"; d.setAttribute("role", "status"); d.textContent = t; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 3500); }
   function dialog(titel, html, knoepfe) {
     var d = document.getElementById("dialog");
-    d.innerHTML = '<div class="d-inhalt"><h2 id="d-titel">' + esc(titel) + "</h2>" + html + '</div><div class="d-fuss">' + knoepfe.map(function (k, i) { return '<button class="btn' + (k.primaer ? " primaer" : "") + '" data-i="' + i + '">' + esc(k.text) + "</button>"; }).join("") + "</div>";
+    d.innerHTML = '<div class="d-inhalt"><h2 id="d-titel">' + esc(titel) + "</h2>" + html + '</div><div class="d-fuss">' + knoepfe.map(function (k, i) { return '<button class="btn' + (k.gefahr ? " gefahr" : k.primaer ? " primaer" : "") + '" data-i="' + i + '">' + esc(k.text) + "</button>"; }).join("") + "</div>";
     d.setAttribute("aria-labelledby", "d-titel");
     d.querySelectorAll(".d-fuss button").forEach(function (b) { b.onclick = function () { d.close(); var k = knoepfe[+b.dataset.i]; if (k.aktion) k.aktion(); }; });
     if (d.showModal) d.showModal(); else d.setAttribute("open", "");
@@ -882,7 +882,7 @@
       case "neu-laden": render(); break;
       case "objekt-oeffnen": IFP.objekte.laden(el.dataset.id).then(function (d) { if (!d) { toast("Objekt nicht gefunden."); return; } Z.objekt = d; IFP.zustand.objekt = d; IFP.sitzung.exposeSeiten = null; speichern(); gewaehltesFeld = null; gehe("auswertung"); }).catch(function (e) { toast("Öffnen fehlgeschlagen: " + e.message); }); break;
       case "objekt-loeschen": { var oid = el.dataset.id;
-        dialog("Objekt löschen?", "<p>Das Objekt wird aus „Meine Objekte“ entfernt" + (IFP.objekte.modus === "supabase" ? " – auch in Supabase" : "") + ". Das kann nicht rückgängig gemacht werden.</p>", [{ text: "Löschen", primaer: true, aktion: function () { IFP.objekte.loeschen(oid).then(function () { toast("Gelöscht."); render(); }).catch(function (e) { toast("Löschen fehlgeschlagen: " + e.message); }); } }, { text: "Abbrechen" }]); break; }
+        dialog("Objekt löschen?", "<p>Das Objekt wird aus „Meine Objekte“ entfernt" + (IFP.objekte.modus === "supabase" ? " – auch in Supabase" : "") + ". Das kann nicht rückgängig gemacht werden.</p>", [{ text: "Löschen", gefahr: true, aktion: function () { IFP.objekte.loeschen(oid).then(function () { toast("Gelöscht."); render(); }).catch(function (e) { toast("Löschen fehlgeschlagen: " + e.message); }); } }, { text: "Abbrechen" }]); break; }
       case "verbindung-pruefen": {
         var pe = document.getElementById("pruef-ergebnis"); if (pe) pe.innerHTML = '<p class="klein">Prüfe …</p>';
         IFP.objekte.pruefen().then(function (sch) { if (pe) pe.innerHTML = "<ul>" + sch.map(function (x) { return "<li>" + (x.ok ? '<span class="ampel gruen">✓</span> ' : '<span class="ampel rot">✕</span> ') + esc(x.text) + "</li>"; }).join("") + "</ul>"; });
@@ -907,7 +907,7 @@
         }); break; }
       case "ki-widerruf": Z.einstellungen.kiEinwilligung = null; speichern(); toast("Zustimmung zurückgesetzt."); render(); break;
       case "alles-loeschen":
-        dialog("Wirklich alles löschen?", "<p>Entwurf, Einstellungen, lokale Daten und gespeicherte Objekte auf diesem Gerät werden gelöscht.</p>", [{ text: "Alles löschen", primaer: true, aktion: function () { IFP.objekte.allesLoeschen().then(function () { return 0; }).catch(function (e) { toast("Supabase konnte nicht gelöscht werden (" + e.message + "). Lokale Daten werden gelöscht."); return 3500; }).then(function (warte) { IFP.allesLoeschen(); setTimeout(function () { location.hash = ""; location.reload(); }, warte); }); } }, { text: "Abbrechen" }]); break;
+        dialog("Wirklich alles löschen?", "<p>Entwurf, Einstellungen, lokale Daten und gespeicherte Objekte auf diesem Gerät werden gelöscht.</p>", [{ text: "Alles löschen", gefahr: true, aktion: function () { IFP.objekte.allesLoeschen().then(function () { return 0; }).catch(function (e) { toast("Supabase konnte nicht gelöscht werden (" + e.message + "). Lokale Daten werden gelöscht."); return 3500; }).then(function (warte) { IFP.allesLoeschen(); setTimeout(function () { location.hash = ""; location.reload(); }, warte); }); } }, { text: "Abbrechen" }]); break;
     }
   });
 

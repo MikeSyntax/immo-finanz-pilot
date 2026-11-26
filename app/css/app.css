@@ -11,7 +11,8 @@
   --linie: #D9D3C3;
   --gold: #A8841F;          /* nur Icons, Akzente, Schrift ≥ 24 px */
   --gold-text: #8A6D1F;     /* Links, kleine Goldschrift (AA) */
-  --primaer: #1A1A1A;
+  --primaer: #8A6D1F;        /* Buttons gefüllt Gold (Weiß darauf 4,9 : 1) */
+  --primaer-hover: #6F5718;
   --primaer-text: #FFFFFF;
   --fokus: #8A6D1F;
   --gruen: #1E6B3A; --gruen-bg: #E6F2EA;
@@ -27,7 +28,7 @@
 /* Dark-Mode (E9): nur Variablen tauschen. Kontraste auf --bg geprüft (Text ≥ 7:1, Gold-Text ≥ 4,5:1). */
 :root[data-theme="dunkel"] {
   --bg: #0F0F12; --flaeche: #18181D; --flaeche-2: #212128; --text: #F2EEE3; --text-2: #C9C3B5;
-  --linie: #3A3833; --gold: #D4AF37; --gold-text: #E0C060; --primaer: #E0C060; --primaer-text: #111111; --fokus: #E0C060;
+  --linie: #3A3833; --gold: #D4AF37; --gold-text: #E0C060; --primaer: #E0C060; --primaer-hover: #EBD38A; --primaer-text: #111111; --fokus: #E0C060;
   --gruen: #7FD49B; --gruen-bg: #16301F; --gelb: #F2CF66; --gelb-bg: #352C10; --rot: #FF9B92; --rot-bg: #3A1714;
   --grau: #C4C4C4; --grau-bg: #2A2A2F; --ki: #B9B5FF; --ki-bg: #24224A;
 }
@@ -57,7 +58,10 @@ a { color: var(--gold-text); text-underline-offset: 2px; }
 .icon-btn:hover { background: var(--flaeche); }
 .inhalt { padding: 1rem; flex: 1; width: 100%; max-width: 1280px; margin: 0 auto; }
 .fuss { padding: 1rem; border-top: 1px solid var(--linie); font-size: .875rem; color: var(--text-2); display: flex; flex-wrap: wrap; gap: .25rem 1rem; padding-bottom: 6rem; }
+.fuss { align-items: center; }
 .fuss a { color: var(--text-2); min-height: 44px; display: inline-flex; align-items: center; }
+@media (min-width: 700px) { .fuss span { margin-left: auto; } }   /* Desktop: Hinweis rechtsbündig auf Höhe der Links; Handy: eigene Zeile links (Rückmeldung Mike, 26.11.2026) */
+.inhalt:focus { outline: none; }    /* Fokus-Sprung zum Inhalt nach Seitenwechsel: kein Goldrahmen um den ganzen Bereich */
 
 /* Navigation unten (Smartphone) */
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--bg); border-top: 1px solid var(--linie); }
@@ -76,11 +80,20 @@ a { color: var(--gold-text); text-underline-offset: 2px; }
 /* Karten, Felder, Knöpfe */
 .karte { background: var(--bg); border: 1px solid var(--linie); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; box-shadow: var(--schatten); }
 .karte.flach { box-shadow: none; background: var(--flaeche); }
-.btn { min-height: 48px; padding: .625rem 1.25rem; border-radius: 999px; border: 2px solid var(--primaer); background: var(--bg); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; text-decoration: none; }
-.btn.primaer { background: var(--primaer); color: var(--primaer-text); }
+/* Buttons – einheitliches System (Entscheidung Mike, 26.11.2026):
+   Primär = gefüllt Gold · Sekundär = Goldrand + Goldschrift · Textlink · Löschen = Rot umrandet · Gesperrt = grau · Umschalter = gewählt gefüllt */
+.btn { min-height: 48px; padding: .625rem 1.25rem; border-radius: 999px; border: 2px solid var(--primaer); background: transparent; color: var(--primaer); font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; text-decoration: none; transition: background-color .15s, border-color .15s, color .15s; }
+.btn:hover { background: var(--flaeche); }
+.btn.primaer, .btn[aria-selected="true"] { background: var(--primaer); border-color: var(--primaer); color: var(--primaer-text); }
+.btn.primaer:hover, .btn[aria-selected="true"]:hover { background: var(--primaer-hover); border-color: var(--primaer-hover); }
+.btn.gefahr { border-color: var(--rot); color: var(--rot); background: transparent; }
+.btn.gefahr:hover { background: var(--rot-bg); }
 .btn.breit { width: 100%; }
-.btn:disabled, .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.btn:disabled, .btn[aria-disabled="true"], .btn.primaer[aria-disabled="true"] { background: var(--linie); border-color: var(--linie); color: var(--text-2); cursor: not-allowed; opacity: 1; }
 .btn.link { border: 0; background: transparent; color: var(--gold-text); text-decoration: underline; padding: .5rem; min-height: 44px; font-weight: 600; }
+.btn.link:hover { background: transparent; color: var(--text); }
+input[type="file"]::file-selector-button { min-height: 44px; margin-right: .75rem; padding: .5rem 1.1rem; border-radius: 999px; border: 2px solid var(--primaer); background: transparent; color: var(--primaer); font: inherit; font-weight: 700; cursor: pointer; }
+input[type="file"]::file-selector-button:hover { background: var(--flaeche); }
 .btn-reihe { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
 .feld { margin-bottom: 1rem; }
 .feld label, .feld .label { display: block; font-weight: 700; margin-bottom: .25rem; }
