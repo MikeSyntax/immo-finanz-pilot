@@ -148,6 +148,13 @@
         { kopf: ["Prüfung der Bank", "Wert", "Ampel", "Hinweis"] });
       if (op.length) S.kasten("Entwurf – " + op.length + (op.length === 1 ? " offener Punkt" : " offene Punkte"), op.map(function (p) { return p.text; }).join(" · ") + ". Die betroffenen Werte sind in dieser Präsentation als Annahme oder fehlend gekennzeichnet.", "warnung");
       else S.kasten("Alle Pflichtangaben belegt", "Alle Werte wurden vom Nutzer geprüft und bestätigt.", "ok");
+      /* Eigene Annahmen und Schwellen auf Seite 1 sichtbar (Nutzertest W9T4, Punkt 1) */
+      var eig = IFP.eigeneEinstellungen();
+      if (eig.length) {
+        var eigWarn = eig.some(function (e2) { return e2.ausserhalb; });
+        S.kasten("Gerechnet mit " + eig.length + (eig.length === 1 ? " eigenen Annahme" : " eigenen Annahmen") + " statt Standard",
+          eig.map(function (e2) { return e2.text; }).join(" · ") + "." + (eigWarn ? " Mindestens ein Wert liegt außerhalb der üblichen Spanne oder ist milder als der Standard – die Ampeln können dadurch zu günstig wirken." : ""), eigWarn ? "warnung" : "");
+      }
       var hb1 = U.stellschrauben(erg);
       if (hb1.length) { S.h2("Was müsste sich ändern? (Auszug)"); S.tabelle([{ b: S.innen - 60 }, { b: 60, rechts: true }], hb1.slice(0, 3).map(function (h) { return [h[0], h[1]]; }), { gr: 9 }); S.absatz("Vollständig mit Rechenweg in Kapitel „So rechnet die Bank“.", { gr: 8, farbe: FARBE.grau }); }
       var ki = o.kiTexte && o.kiTexte.zusammenfassung;
@@ -290,7 +297,8 @@
       S.tabelle([{ b: S.innen - 70 }, { b: 35, rechts: true }, { b: 35, rechts: true }], Object.keys(IFP.ANNAHMEN_STANDARD).map(function (k) {
         var d = IFP.ANNAHMEN_STANDARD[k], f = function (val) { return d.einheit === "%" ? proz(val, 1) : d.einheit === "€" ? euro(val, 0) : zahl(val, 1); };
         var eigen = IFP.istZahl(Z.einstellungen.annahmen[k]) && Z.einstellungen.annahmen[k] !== d.wert;
-        return [d.label + (eigen ? " (eigene Einstellung)" : ""), f(a[k]), f(d.wert)];
+        var sp = IFP.ANNAHMEN_SPANNE[k], aus = eigen && sp && (a[k] < sp[0] - 1e-9 || a[k] > sp[1] + 1e-9);
+        return [d.label + (eigen ? (aus ? " (eigene Einstellung, außerhalb üblich)" : " (eigene Einstellung)") : ""), f(a[k]), f(d.wert)];
       }), { kopf: ["Annahme", "verwendet", "Standard"], gr: 8.5 });
       S.h2("Datenquellen");
       var q = ["Grunderwerbsteuer: " + IFP.GREST.quelle + ", Stand " + IFP.GREST.stand + "."];

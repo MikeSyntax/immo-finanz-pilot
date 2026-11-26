@@ -299,3 +299,7 @@ table.verlauf td, table.verlauf th { white-space: nowrap; }
 /* Vorschau der Bank-Präsentation bleibt immer hell – wie das PDF */
 .seite-vorschau { --bg: #FFFFFF; --flaeche: #FAF7EF; --text: #1A1A1A; --text-2: #4A4A4A; --linie: #D9D3C3; --gold: #A8841F; --gold-text: #8A6D1F;
   --gruen: #1E6B3A; --gruen-bg: #E6F2EA; --gelb: #7A5A00; --gelb-bg: #FFF4D1; --rot: #A3201A; --rot-bg: #FBE7E5; --grau: #555555; --grau-bg: #EFEFEF; color: var(--text); }
+
+/* Nutzertest W9T4 (Paket A): Warnung bei eigenen Annahmen außerhalb der Spanne, Fokus auf Seitentitel */
+.warn-text { display: block; margin: .4rem 0 0; padding: .4rem .6rem; border-left: 3px solid var(--gelb); background: var(--gelb-bg); border-radius: 0 6px 6px 0; color: var(--text); font-size: .875rem; }
+#kopf-titel:focus:not(:focus-visible) { outline: none; }

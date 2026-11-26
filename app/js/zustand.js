@@ -71,6 +71,33 @@
     Object.keys(IFP.SCHWELLEN_STANDARD).forEach(function (k) { s[k] = Object.assign({}, IFP.SCHWELLEN_STANDARD[k], eig[k] || {}); });
     return s;
   };
+  /* Eigene Annahmen und Schwellen (Nutzertest W9T4, Punkt 1): für Hinweis in Auswertung, Präsentation und PDF */
+  IFP.eigeneEinstellungen = function () {
+    var E = IFP.zustand.einstellungen, liste = [], gleich = function (a, b) { return Math.abs(a - b) < 1e-9; };
+    var fmt = function (v, ein) {
+      if (ein === "%") return (Math.round(v * 1000) / 10).toLocaleString("de-DE") + " %";
+      if (ein === "€") return Math.round(v).toLocaleString("de-DE") + " €";
+      return (Math.round(v * 100) / 100).toLocaleString("de-DE");
+    };
+    Object.keys(IFP.ANNAHMEN_STANDARD).forEach(function (k) {
+      var d = IFP.ANNAHMEN_STANDARD[k], v = (E.annahmen || {})[k];
+      if (!IFP.istZahl(v) || gleich(v, d.wert)) return;
+      var sp = (IFP.ANNAHMEN_SPANNE || {})[k], aus = !!sp && (v < sp[0] - 1e-9 || v > sp[1] + 1e-9);
+      liste.push({ art: "annahme", id: k, label: d.label, wert: v, standard: d.wert, ausserhalb: aus,
+        spanneText: sp ? fmt(sp[0], d.einheit) + " bis " + fmt(sp[1], d.einheit) : "",
+        text: d.label + " " + fmt(v, d.einheit) + " (Standard " + fmt(d.wert, d.einheit) + ")" });
+    });
+    Object.keys(E.schwellen || {}).forEach(function (k) {
+      var d = IFP.SCHWELLEN_STANDARD[k], e = E.schwellen[k] || {}; if (!d) return;
+      ["gruen", "gelb"].forEach(function (g) {
+        var v = e[g]; if (!IFP.istZahl(v) || !IFP.istZahl(d[g]) || gleich(v, d[g])) return;
+        var milder = d.richtung === "hoch" ? v < d[g] : v > d[g];
+        liste.push({ art: "schwelle", id: k + "-" + g, label: "Ampel " + d.label + ", Grenze " + (g === "gruen" ? "gut" : "kritisch"), wert: v, standard: d[g], ausserhalb: milder, milder: milder,
+          text: "Ampel " + d.label + ", Grenze " + (g === "gruen" ? "gut" : "kritisch") + " " + fmt(v, d.einheit) + " (Standard " + fmt(d[g], d.einheit) + (milder ? ", milder" : "") + ")" });
+      });
+    });
+    return liste;
+  };
   IFP.ergebnis = function () {
     var x = IFP.eingaben();
     return IFP.rechne(x.e, x.annahmen, IFP.annahmenFlach(IFP.zustand.einstellungen.annahmen), IFP.schwellen());

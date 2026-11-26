@@ -3,7 +3,7 @@
    Werte mit "einstellbar: true" kann der Nutzer unter "Bank-Annahmen" ändern (US-09). */
 window.IFP = window.IFP || {};
 
-IFP.VERSION = "0.5.8 (Haushalt Alter/Rente, ohne Ergebnisleiste)";
+IFP.VERSION = "0.6.0 (Nutzertest-Fixes Paket A)";
 IFP.SPEZ = "03 v0.4";
 
 /* Bank-Annahmen (🔧). Prozentwerte als Dezimalzahl (0.02 = 2 %). */
@@ -22,6 +22,14 @@ IFP.ANNAHMEN_STANDARD = {
   AF_EINFACH: { wert: 0.9, label: "Ausstattungsfaktor einfach", einheit: "x", erklaerung: "Modellannahme für die zweite Sicht auf den Beleihungswert. Keine Bankvorgabe." },
   AF_MITTEL:  { wert: 1.0, label: "Ausstattungsfaktor mittel", einheit: "x", erklaerung: "Modellannahme für die zweite Sicht auf den Beleihungswert. Keine Bankvorgabe." },
   AF_GUT:     { wert: 1.1, label: "Ausstattungsfaktor gut", einheit: "x", erklaerung: "Modellannahme für die zweite Sicht auf den Beleihungswert. Keine Bankvorgabe." }
+};
+
+/* Übliche Spannen der Bank-Annahmen (Nutzertest W9T4, Punkt 1): außerhalb → gelbe Warnung, Speichern bleibt erlaubt.
+   Orientierung an den Erklärtexten oben; keine Bankvorgabe. */
+IFP.ANNAHMEN_SPANNE = {
+  NOT: [0.015, 0.02], MAW: [0.01, 0.05], SA: [0.10, 0.20], MA: [0.60, 0.80],
+  LHP1: [800, 1500], LHP2: [300, 700], LHPK: [200, 500], WS: [0, 0.03], MS: [0, 0.03],
+  ZR: [0.03, 0.07], ZUSCHLAG_ANSCHLUSS: [0.01, 0.03], AF_EINFACH: [0.8, 1.0], AF_MITTEL: [0.9, 1.1], AF_GUT: [1.0, 1.2]
 };
 
 /* Grunderwerbsteuer je Bundesland – Stand der Recherche 24.11.2026 (03 v0.3, Abschnitt 1a) */

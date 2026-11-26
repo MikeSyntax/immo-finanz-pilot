@@ -178,7 +178,7 @@
       { id: "BMR", wert: W.BMR, felder: ["KP", "KM"], typ: "%" },
       { id: "CF", wert: W.CF, felder: basisD.concat(["KM", "HG_nu"]), typ: "€" },
       { id: "KPF", wert: W.KPF, felder: ["KP", "KM"], typ: "x" },
-      { id: "HUE", wert: W.HUE, felder: ["NE", "BR", "WK", "ERW"], typ: "€", freiwilligStart: "NE" },
+      { id: "HUE", wert: W.HUE, felder: basisD.concat(["KM", "HG_nu", "NE", "BR", "WK", "ERW"]), typ: "€", freiwilligStart: "NE" },
       { id: "RS_RENTE", wert: W.RS_Rente, felder: ["ALT", "RENT"], typ: "€", freiwilligStart: "ALT" },
       { id: "KP_REF", wert: (istZahl(W.KP_m2) && istZahl(e.RP_m2)) ? W.KP_m2 / e.RP_m2 - 1 : null, felder: ["KP", "WFL"], typ: "%", freiwilligStart: "RP_m2" },
       { id: "MIETE_REF", wert: (istZahl(W.KM_noetig_m2) && istZahl(e.RM_m2)) ? W.KM_noetig_m2 / e.RM_m2 - 1 : null, felder: ["KP", "WFL"], typ: "%", freiwilligStart: "RM_m2" }

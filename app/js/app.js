@@ -46,6 +46,7 @@
     hilfe: { titel: "Hilfe & Begriffe", nav: "mehr" }
   };
   var aktiveKennzahl = "DSCR", gewaehltesFeld = null, onboardingSchritt = 0, importAnsicht = "pdf";
+  var letzteRoute = null, sprungZiel = null, rueckZiel = null; // Nutzertest W9T4, Punkte 3 und 4
 
   function route() { var h = (location.hash || "").replace("#", ""); return SEITEN[h] ? h : (Z.einstellungen.onboardingGesehen ? "start" : "onboarding"); }
   function gehe(r) { if (location.hash === "#" + r) render(); else location.hash = r; }
@@ -104,7 +105,9 @@
     } else st.hidden = true;
     document.getElementById("demo-banner").hidden = !Z.einstellungen.demoModus;
     var main = document.getElementById("inhalt");
-    main.innerHTML = inhalt;
+    var offen = main.dataset.route === r ? Array.prototype.map.call(main.querySelectorAll("details"), function (d) { return d.open; }) : null;
+    main.innerHTML = inhalt; main.dataset.route = r;
+    if (offen) main.querySelectorAll("details").forEach(function (d, i) { if (i < offen.length) d.open = offen[i]; });
     zuklappenErgaenzen(main);
     main.focus({ preventScroll: true });
   }
@@ -290,7 +293,11 @@
     var aktion = '<div class="btn-reihe"><button class="btn primaer breit" data-aktion="bestaetigen"' + (gesperrt ? ' aria-disabled="true"' : "") + ">" +
       (gesperrt ? "Werte bestätigen – " + unsicher + (unsicher === 1 ? " unsicherer Wert offen" : " unsichere Werte offen") : (o.bestaetigt ? "Bestätigt – weiter zum Lücken-Check" : "Werte bestätigen")) + "</button></div>" +
       (gesperrt ? '<p class="klein zweit">Tippe auf den gelb markierten Wert und kläre ihn. Erst dann kann gerechnet werden.</p>' : "");
-    return '<div class="mit-panel drei"><section>' + links + '</section><aside class="panel immer" id="detail" aria-label="Fundstelle und Korrektur">' + feldDetail(gewaehltesFeld) + exposeTextBox() + '</aside><div class="aktionen">' + aktion + "</div></div>";
+    var rueckNamen = { finanzierung: "Finanzierung", auswertung: "Auswertung", luecken: "Lücken-Check", praesentation: "Präsentation", unterlagen: "Unterlagen" };
+    var rueck = rueckZiel && o.bestaetigt ? '<div class="hinweis ok"><b>Deine Bestätigung bleibt bestehen.</b> Leere Felder ergänzen hebt sie nicht auf – nur wenn du einen bestätigten Wert änderst, musst du neu bestätigen. <button class="btn primaer" data-aktion="gehe" data-ziel="' + rueckZiel + '">Zurück zur ' + esc(rueckNamen[rueckZiel] || "vorherigen Seite") + "</button></div>" :
+      (rueckZiel && !o.bestaetigt ? '<div class="hinweis warnung">Du hast einen bereits bestätigten Wert geändert. Bitte bestätige die Werte unten neu, dann geht es weiter.</div>' : "");
+    if (rueckZiel && o.bestaetigt) aktion = '<div class="btn-reihe"><button class="btn primaer breit" data-aktion="gehe" data-ziel="' + rueckZiel + '">Zurück zur ' + esc(rueckNamen[rueckZiel] || "vorherigen Seite") + "</button></div>" + aktion.replace('class="btn primaer breit" data-aktion="bestaetigen"', 'class="btn breit" data-aktion="bestaetigen"');
+    return rueck + '<div class="mit-panel drei"><section>' + links + '</section><aside class="panel immer" id="detail" aria-label="Fundstelle und Korrektur">' + feldDetail(gewaehltesFeld) + exposeTextBox() + '</aside><div class="aktionen">' + aktion + "</div></div>";
   };
 
   function offeneLuecken() {
@@ -382,6 +389,15 @@
       return "<tr" + (z[3] ? ' class="summe"' : "") + '><td class="op" aria-hidden="true">' + esc(z[0]) + "</td><th scope=\"row\">" + z[1] + "</th><td>" + esc(z[2]) + "</td></tr>";
     }).join("") + "</tbody></table>";
   }
+  /* Fehlenden Wert direkt in der Finanzierung eintragen – ohne Umweg über die Prüfmaske (Nutzertest W9T4, Punkt 4) */
+  function fehltEingabe(x, fehlt) {
+    var fid = IFP.istZahl(x.e.KM) ? "HG_nu" : "KM", lbl = fid === "KM" ? "Kaltmiete pro Monat" : "Nicht umlagefähiges Hausgeld pro Monat";
+    var tipp = fid === "HG_nu" ? "Steht oft in der Hausgeldabrechnung oder im Wirtschaftsplan. Fehlt der Beleg, kannst du einen Wert als Annahme übernehmen." : "Steht im Exposé oder im Mietvertrag.";
+    return '<div class="hinweis warnung"><p style="margin:0 0 .5rem">Für den Cashflow fehlt noch: <b>' + esc(fehlt.join(", ")) + "</b>. Du kannst den Wert direkt hier eintragen.</p>" +
+      '<div class="feld"><label for="fin-fehlt">' + lbl + '</label><div class="eingabe-einheit"><input id="fin-fehlt" type="text" inputmode="decimal" autocomplete="off"><span>€</span></div><div class="hilfe">' + tipp + "</div></div>" +
+      '<div class="btn-reihe"><button class="btn primaer" data-aktion="fin-fehlt" data-feld="' + fid + '" data-art="wert">Übernehmen (belegt)</button><button class="btn" data-aktion="fin-fehlt" data-feld="' + fid + '" data-art="annahme">Als Annahme übernehmen</button>' +
+      '<button class="btn link" data-aktion="feld-oeffnen" data-feld="' + fid + '">In der Prüfmaske ansehen</button></div></div>';
+  }
   function fehltText(x) {
     var f = [];
     if (!IFP.istZahl(x.e.KM)) f.push("Kaltmiete");
@@ -422,11 +438,11 @@
       eingabeFeld("ALT", "Dein Alter heute", Z.lokal.alter.ALT, "Jahre", "Bleibt nur auf diesem Gerät.", null, "alter") +
       eingabeFeld("RENT", "Geplanter Rentenbeginn mit", Z.lokal.alter.RENT, "Jahren", "Für die Restschuld bei Rentenbeginn.", null, "alter") + "</div></div></details></div>";
     var fehlt = fehltText(x);
-    var cfHinweis = IFP.istZahl(w.R) && !IFP.istZahl(w.CF) && fehlt.length ? '<div class="hinweis">Für den Cashflow fehlt noch: <b>' + fehlt.join(", ") + '</b>. <button class="btn link" data-aktion="feld-oeffnen" data-feld="' + (IFP.istZahl(x.e.KM) ? "HG_nu" : "KM") + '">Jetzt eintragen</button></div>' :
+    var cfHinweis = IFP.istZahl(w.R) && !IFP.istZahl(w.CF) && fehlt.length ? fehltEingabe(x, fehlt) :
       (hgAnnahme && IFP.istZahl(w.CF) ? '<p class="klein zweit">Der Cashflow enthält eine Annahme (nicht umlagefähiges Hausgeld). Die Ampeln dazu bleiben grau, bis der Wert belegt ist.</p>' : "");
     var ergebnisKarte = heroHTML(erg) + cfHinweis + '<div class="karte flach"><h3>Rechenweg Kapitalbedarf</h3>' + kap +
       (mon ? '<h3 style="margin-top:1rem">Rechenweg Monatsbelastung</h3>' + mon : "") + anschluss + "</div>";
-    return nichtBestaetigt() + '<div class="mit-panel drei"><section>' + form + '</section><aside class="panel immer">' + ergebnisKarte + '</aside><div class="aktionen">' +
+    return nichtBestaetigt() + eigeneHinweis() + '<div class="mit-panel drei"><section>' + form + '</section><aside class="panel immer">' + ergebnisKarte + '</aside><div class="aktionen">' +
       '<div class="btn-reihe"><button class="btn primaer" data-aktion="gehe" data-ziel="auswertung">Zur Auswertung</button><a class="btn" href="#haushalt">Haushalt ergänzen (freiwillig)</a></div>' + "</div></div>";
   };
 
@@ -454,17 +470,26 @@
       { id: "EK_KNK", titel: "Eigenkapital ≥ Nebenkosten", wert: euro(x.EK, 0), unter: "Nebenkosten " + euro(w.KNK, 0), begriff: "Kaufnebenkosten",
         formel: "Prüfung: Eigenkapital ≥ Kaufnebenkosten", zahlen: euro(x.EK) + " ≥ " + euro(w.KNK) + " → " + (amp.EK_KNK && amp.EK_KNK.status === "gruen" ? "ja" : "nein") },
       { id: "HUE", titel: "Haushaltsüberschuss", wert: euro(w.HUE), unter: "freiwillig, nur lokal", begriff: "Haushaltsüberschuss",
-        formel: "Überschuss = Netto + Miete × Anrechnung − Lebenshaltung − Kredite − Wohnkosten − nicht umlagef. Hausgeld − Rate", zahlen: IFP.istZahl(w.HUE) ? "= " + euro(x.NE) + " + " + euro(x.KM) + " × " + proz(a.MA, 0) + " − " + euro(w.LHP) + " − " + euro(x.BR) + " − " + euro(x.WK) + " − " + euro(x.HG_nu) + " − " + euro(w.R) + "\n= " + euro(w.HUE) : "Haushaltsdaten nicht ausgefüllt (freiwillig, bleiben auf deinem Gerät)." },
+        formel: "Überschuss = Netto + Miete × Anrechnung − Lebenshaltung − Kredite − Wohnkosten − nicht umlagef. Hausgeld − Rate", zahlen: IFP.istZahl(w.HUE) ? "= " + euro(x.NE) + " + " + euro(x.KM) + " × " + proz(a.MA, 0) + " − " + euro(w.LHP) + " − " + euro(x.BR) + " − " + euro(x.WK) + " − " + euro(x.HG_nu) + " − " + euro(w.R) + "\n= " + euro(w.HUE) : hueGrund(x, w) },
       { id: "KP_REF", titel: "Kaufpreis/m² vs. Markt", wert: euro(w.KP_m2), unter: "Referenz " + euro(x.RP_m2), begriff: "Kaufpreisfaktor",
         formel: "Abweichung = Kaufpreis/m² ÷ Referenz − 1", zahlen: IFP.istZahl(x.RP_m2) ? "= " + euro(w.KP_m2) + " ÷ " + euro(x.RP_m2) + " − 1 = " + proz(w.KP_m2 / x.RP_m2 - 1, 1) : "Kein Referenzwert hinterlegt." },
       { id: "RS_RENTE", titel: "Restschuld bei Rente", wert: euro(w.RS_Rente, 0), unter: "freiwillig, nur lokal", begriff: "Restschuld",
         formel: "Restschuld nach (Rentenalter − Alter) × 12 Monaten", zahlen: IFP.istZahl(w.RS_Rente) ? "= " + euro(w.RS_Rente) : "Alter und Rentenbeginn nicht angegeben (freiwillig)." }
     ].map(function (k) { k.ampel = amp[k.id]; return k; });
   }
+  function hueGrund(x, w) {
+    var namen = { NE: "Nettoeinkommen", BR: "bestehende Kreditraten", WK: "eigene Wohnkosten", ERW: "Erwachsene im Haushalt" }, f = [];
+    Object.keys(namen).forEach(function (k) { if (!IFP.istZahl(x[k])) f.push(namen[k]); });
+    if (!IFP.istZahl(x.KM)) f.push("Kaltmiete");
+    if (!IFP.istZahl(x.HG_nu)) f.push("nicht umlagefähiges Hausgeld");
+    if (!IFP.istZahl(w.R)) f.push("Finanzierung (Eigenkapital, Zins, Tilgung, Zinsbindung)");
+    return f.length ? "Noch nicht berechenbar. Es fehlt: " + f.join(", ") + ". Leeres Feld „Kinder“ zählt als 0." : "Noch nicht berechenbar.";
+  }
+  var FEHLT_NAMEN = { GrESt: "Bundesland", EK: "Eigenkapital", i: "Zins", t: "Tilgung", ZB: "Zinsbindung", NE: "Nettoeinkommen", BR: "bestehende Kreditraten", WK: "eigene Wohnkosten", ERW: "Erwachsene im Haushalt", ALT: "Alter", RENT: "Rentenbeginn" };
   function ampelZusatz(q) {
     if (!q) return "";
     if (q.status === "unvollstaendig") {
-      var namen = q.fehlt.concat(q.annahmen).map(function (f) { var d = IFP.FELDER.filter(function (x) { return x.id === f; })[0]; return d ? (/^davon/.test(d.label) ? "Hausgeld – " : "") + d.label : ({ GrESt: "Bundesland", EK: "Eigenkapital", i: "Zins", t: "Tilgung", ZB: "Zinsbindung" }[f] || f); });
+      var namen = q.fehlt.concat(q.annahmen).map(function (f) { var d = IFP.FELDER.filter(function (x) { return x.id === f; })[0]; return d ? (/^davon/.test(d.label) ? "Hausgeld – " : "") + d.label : (FEHLT_NAMEN[f] || f); });
       return (q.wegenAnnahme ? "Annahme: " : "fehlt: ") + namen.join(", ");
     }
     if (q.status === "nichtbewertet") return q.text || "freiwillig – nicht ausgefüllt";
@@ -480,6 +505,16 @@
     var eigen = std && (std.gruen !== s.gruen || std.gelb !== s.gelb);
     return t + (eigen ? ' <span class="badge annahme">eigene Einstellung</span><br><span class="zweit">Standard: ' + (s.richtung === "hoch" ? "gut ≥ " + f(std.gruen) + " · kritisch < " + f(std.gelb) : "gut ≤ " + f(std.gruen) + " · kritisch > " + f(std.gelb)) + "</span>" : "");
   }
+  function sprungKnoepfe(q) {
+    if (!q || q.status !== "unvollstaendig") return "";
+    var alle = q.fehlt.concat(q.annahmen), h = "";
+    var objF = alle.filter(function (f) { return IFP.FELDER.some(function (d) { return d.id === f; }); })[0];
+    if (objF) h += '<button class="btn primaer" data-aktion="feld-oeffnen" data-feld="' + objF + '">' + (q.fehlt.indexOf(objF) >= 0 ? "Fehlenden Wert eintragen" : "Beleg eintragen") + "</button>";
+    if (alle.some(function (f) { return ["EK", "i", "t", "ZB"].indexOf(f) >= 0; })) h += '<a class="btn" href="#finanzierung">Finanzierung ergänzen</a>';
+    if (alle.some(function (f) { return ["NE", "BR", "WK", "ERW"].indexOf(f) >= 0; })) h += '<a class="btn" href="#haushalt">Haushalt ergänzen</a>';
+    if (alle.some(function (f) { return ["ALT", "RENT"].indexOf(f) >= 0; })) h += '<a class="btn" href="#haushalt">Alter und Rente ergänzen</a>';
+    return h;
+  }
   function kennzahlPanel(k) {
     var q = k.ampel;
     return '<div class="karte"><div class="objekt-zeile"><h3 style="flex:1;margin:0">So rechnet die Bank: ' + esc(k.titel) + "</h3>" + (q ? ampel(q.status) : "") + "</div>" +
@@ -487,7 +522,7 @@
       '<pre class="rechenweg">' + esc(k.formel + "\n" + k.zahlen) + "</pre>" +
       (q && q.status === "unvollstaendig" ? '<p class="klein"><b>Warum grau?</b> ' + esc(ampelZusatz(q)) + "</p>" : "") +
       (q ? '<p class="klein"><b>Schwellen:</b> ' + schwelleText(q) + "</p>" : "") +
-      '<div class="btn-reihe"><a class="btn link" href="#einstellungen">Schwellen ändern</a><button class="btn" data-aktion="erklaeren" data-id="' + k.id + '">Erklären <span class="badge ki">KI</span></button></div><div id="erkl-' + k.id + '" aria-live="polite"></div></div>';
+      '<div class="btn-reihe">' + sprungKnoepfe(q) + '<a class="btn link" href="#einstellungen">Schwellen ändern</a><button class="btn" data-aktion="erklaeren" data-id="' + k.id + '">Erklären <span class="badge ki">KI</span></button></div><div id="erkl-' + k.id + '" aria-live="polite"></div></div>';
   }
 
   /* Stellschrauben „Was müsste sich ändern?“ (03 v0.4, Formeln 36a–d) – gemeinsam für Auswertung und PDF */
@@ -523,7 +558,7 @@
       '<div class="karte flach"><div class="objekt-zeile"><b>Gesamt:</b> ' + ampel(g.status) + ' <span class="klein">' + g.gruen + " von " + g.bewertet + " bewerteten Prüfungen grün</span></div>" +
       (g.status === "unvollstaendig" ? '<p class="klein" style="margin-top:.5rem">Kein Gesamturteil, solange Pflichtprüfungen offen sind: ' + esc(g.offen.join(", ")) + ".</p>" : "") +
       '<div class="ampel-zusammen" style="margin-top:.5rem">' + ampel("rot", "(" + z.rot + ")") + ampel("gelb", "(" + z.gelb + ")") + ampel("gruen", "(" + z.gruen + ")") + ampel("unvollstaendig", "(" + z.unvollstaendig + ")") + "</div></div>";
-    return nichtBestaetigt() + '<div class="mit-panel drei"><section>' + kopf + heroHTML(erg) + kacheln + hebel +
+    return nichtBestaetigt() + eigeneHinweis() + '<div class="mit-panel drei"><section>' + kopf + heroHTML(erg) + kacheln + hebel +
       '</section><aside class="panel immer" id="detail">' + kennzahlPanel(aktiv) + '</aside><div class="aktionen"><div class="btn-reihe"><a class="btn link" href="#bank">Alle Formeln: So rechnet die Bank</a><a class="btn link" href="#entwicklung">10-Jahres-Entwicklung</a><a class="btn link" href="#markt">Marktvergleich</a></div>' +
       '<div class="btn-reihe"><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button><button class="btn primaer" data-aktion="gehe" data-ziel="praesentation">Präsentation für die Bank</button></div></div></div>';
   };
@@ -649,7 +684,7 @@
       '<label class="checkzeile"><input type="checkbox" data-aktion="ki-text-geprueft"' + (ki.geprueft ? " checked" : "") + "><span>Ich habe den Text geprüft</span></label>" +
       '<button class="btn" data-aktion="ki-text-vorschlag">Vorschlag erzeugen <span class="badge demo">Demo</span></button></div>';
     var rechts = '<h3 class="gruppen-titel" style="margin-top:0">Vorschau Seite 1</h3>' + vorschauSeite1(erg, entwurf);
-    return '<div class="mit-panel drei"><section>' + links + '</section><aside class="panel immer">' + rechts + '</aside><div class="aktionen"><div class="btn-reihe"><button class="btn primaer" data-aktion="pdf">' + (entwurf ? "Entwurf als PDF erstellen" : "PDF erstellen") + '</button><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button></div></div></div>';
+    return eigeneHinweis() + '<div class="mit-panel drei"><section>' + links + '</section><aside class="panel immer">' + rechts + '</aside><div class="aktionen"><div class="btn-reihe"><button class="btn primaer" data-aktion="pdf">' + (entwurf ? "Entwurf als PDF erstellen" : "PDF erstellen") + '</button><button class="btn" data-aktion="objekt-speichern">Objekt speichern</button></div></div></div>';
   };
 
   IFP.ui = { kennzahlen: kennzahlen, offenePunkte: offenePunkte, stellschrauben: stellschrauben, feldWertText: feldWertText, schwelleText: schwelleText, ampelZusatz: ampelZusatz, lueckenText: lueckenText, euro: euro, zahl: zahl, proz: proz };
@@ -678,7 +713,10 @@
     var feld = function (k) {
       var d = IFP.ANNAHMEN_STANDARD[k], wert = IFP.istZahl(a[k]) ? a[k] : d.wert, eigen = IFP.istZahl(a[k]) && a[k] !== d.wert;
       var std = d.einheit === "%" ? proz(d.wert, 1) : d.einheit === "€" ? euro(d.wert, 0) : zahl(d.wert, 1);
-      return eingabeFeld(k, esc(d.label) + (eigen ? ' <span class="badge annahme">eigene Einstellung</span>' : ""), wert, d.einheit === "x" ? "Faktor" : d.einheit, esc(d.erklaerung) + " Standard: " + std + ".", null, "annahme");
+      var sp = IFP.ANNAHMEN_SPANNE[k], fm = function (v) { return d.einheit === "%" ? proz(v, 1) : d.einheit === "€" ? euro(v, 0) : zahl(v, 1); };
+      var aus = eigen && sp && (wert < sp[0] - 1e-9 || wert > sp[1] + 1e-9);
+      return eingabeFeld(k, esc(d.label) + (eigen ? ' <span class="badge annahme">eigene Einstellung</span>' : ""), wert, d.einheit === "x" ? "Faktor" : d.einheit, esc(d.erklaerung) + " Standard: " + std + "." +
+        (aus ? '<span class="warn-text" role="status">Außerhalb der üblichen Spanne (' + fm(sp[0]) + " bis " + fm(sp[1]) + "). Gespeichert – wird in Auswertung und PDF als eigene Annahme gekennzeichnet. Bitte mit deiner Bank abgleichen.</span>" : ""), null, "annahme");
     };
     var gruppen = [
       ["Kaufnebenkosten und Bank", "Notar, Beleihungswert, Mietausfall, Stresstest", ["NOT", "SA", "MAW", "ZUSCHLAG_ANSCHLUSS"]],
@@ -692,11 +730,12 @@
     }).join("");
     var sch = ["LTV_BANK", "DSCR", "BMR", "CF", "KPF"].map(function (k) {
       var d = IFP.SCHWELLEN_STANDARD[k], e = s[k] || {}, ein = d.einheit === "%" ? "%" : d.einheit === "€" ? "€" : "Wert";
-      return '<fieldset class="karte flach"><legend><b>' + esc(d.label) + "</b></legend><div class=\"raster-2\">" +
+      var milder = ["gruen", "gelb"].some(function (g) { return IFP.istZahl(e[g]) && Math.abs(e[g] - d[g]) > 1e-9 && (d.richtung === "hoch" ? e[g] < d[g] : e[g] > d[g]); });
+      return '<fieldset class="karte flach"><legend><b>' + esc(d.label) + "</b></legend>" + (milder ? '<p class="warn-text" role="status">Milder als der Standard – die Ampel wird dadurch eher grün. Wird in Auswertung und PDF als eigene Einstellung gekennzeichnet.</p>' : "") + "<div class=\"raster-2\">" +
         eingabeFeld("s-" + k + "-gruen", "Grenze gut", IFP.istZahl(e.gruen) ? e.gruen : d.gruen, ein, "Standard: " + (d.einheit === "%" ? proz(d.gruen, 1) : zahl(d.gruen, 2)), null, "schwelle") +
         eingabeFeld("s-" + k + "-gelb", "Grenze kritisch", IFP.istZahl(e.gelb) ? e.gelb : d.gelb, ein, "Standard: " + (d.einheit === "%" ? proz(d.gelb, 1) : zahl(d.gelb, 2)), null, "schwelle") + "</div></fieldset>";
     }).join("");
-    return "<h2>Bank-Annahmen</h2><p>Alle Werte sind einstellbare Modellannahmen, keine verbindlichen Bankwerte. Frag deine Bank nach ihren Werten.</p>" + ann +
+    return "<h2>Bank-Annahmen</h2><p>Alle Werte sind einstellbare Modellannahmen, keine verbindlichen Bankwerte. Frag deine Bank nach ihren Werten.</p>" + eigeneHinweis().replace(' <a href="#einstellungen">Ändern</a>', "") + ann +
       '<h2 style="margin-top:1.5rem">Ampel-Schwellen</h2><p class="klein">Geänderte Schwellen werden in der Auswertung als „eigene Einstellung“ neben dem Standard gezeigt.</p><details class="gruppe"><summary>Schwellen der 5 Pflichtprüfungen mit Zahlenwert</summary><div class="posten">' + sch + "</div></details>" +
       '<div class="btn-reihe"><button class="btn" data-aktion="annahmen-reset">Alles auf Standard zurücksetzen</button></div>' +
       '<h2 style="margin-top:2rem">Darstellung</h2><div class="karte"><fieldset style="border:0;padding:0"><legend class="sr-only">Darstellung</legend>' +
@@ -710,7 +749,7 @@
       '<div class="karte"><h3>Haushaltsrechnung</h3><div class="raster-2">' +
       eingabeFeld("NE", "Haushaltsnettoeinkommen", h.NE, "€/Monat", null, null, "haus") + eingabeFeld("BR", "Bestehende Kreditraten", h.BR, "€/Monat", "0 eintragen, wenn keine.", null, "haus") +
       eingabeFeld("WK", "Eigene Wohnkosten (Miete/Rate)", h.WK, "€/Monat", null, null, "haus") + eingabeFeld("ERW", "Erwachsene im Haushalt", h.ERW, "Personen", null, null, "haus") +
-      eingabeFeld("KINDER", "Kinder", h.KINDER, "Kinder", null, null, "haus") + "</div></div>" +
+      eingabeFeld("KINDER", "Kinder", h.KINDER, "Kinder", "Leer lassen oder 0, wenn keine Kinder.", null, "haus") + "</div></div>" +
       '<div class="karte"><h3>Alter und Rente (freiwillig)</h3><p class="klein zweit">Für die Kennzahl „Restschuld bei Rente“. Dieselben Felder findest du auch im Schritt Finanzierung – die Werte sind dort und hier gleich.</p><div class="raster-2">' +
       eingabeFeld("ALT", "Dein Alter heute", Z.lokal.alter.ALT, "Jahre", "Bleibt nur auf diesem Gerät.", null, "alter") +
       eingabeFeld("RENT", "Geplanter Rentenbeginn mit", Z.lokal.alter.RENT, "Jahren", "Für die Restschuld bei Rentenbeginn.", null, "alter") + "</div></div>" +
@@ -758,8 +797,29 @@
   function render() {
     var r = route();
     if (r === "einwilligung" && Z.einstellungen.kiEinwilligung !== null) r = "import";
+    var neueSeite = r !== letzteRoute; letzteRoute = r;
+    if (r !== "pruefen") rueckZiel = null;
     rahmen(r, V[r]());
     if (V[r].nach) V[r].nach();
+    if (neueSeite) seitenAnfang();
+  }
+  /* Seitenwechsel: nach oben und Fokus auf die Überschrift – außer bei gezielten Sprüngen (Nutzertest W9T4, Punkt 3) */
+  function seitenAnfang() {
+    var ziel = sprungZiel && document.getElementById(sprungZiel); sprungZiel = null;
+    if (ziel) {
+      if (window.innerWidth < 1100) ziel.scrollIntoView({ block: "start" }); else window.scrollTo(0, 0);
+      var h = ziel.querySelector("h3"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+      return;
+    }
+    window.scrollTo(0, 0);
+    var kt = document.getElementById("kopf-titel"); if (kt) { kt.setAttribute("tabindex", "-1"); kt.focus({ preventScroll: true }); }
+  }
+  /* Hinweis „Gerechnet mit X eigenen Annahmen“ (Nutzertest W9T4, Punkt 1) */
+  function eigeneHinweis() {
+    var l = IFP.eigeneEinstellungen(); if (!l.length) return "";
+    var warn = l.some(function (x) { return x.ausserhalb; });
+    return '<div class="hinweis' + (warn ? " warnung" : "") + '"><b>Gerechnet mit ' + l.length + (l.length === 1 ? " eigenen Annahme" : " eigenen Annahmen") + ":</b> " + esc(l.map(function (x) { return x.text; }).join(" · ")) + "." +
+      (warn ? " <b>Mindestens ein Wert liegt außerhalb der üblichen Spanne oder ist milder als der Standard.</b> Die Ampeln können dadurch zu gut aussehen." : "") + ' <a href="#einstellungen">Ändern</a></div>';
   }
 
   /* ---------- Dialoge & Meldungen ---------- */
@@ -850,7 +910,7 @@
         dialog("Live-KI noch nicht angebunden", "<p>In diesem Prototyp-Stand ist die echte KI-Verarbeitung über Make noch nicht eingerichtet. Es wurden <b>keine Daten gesendet</b>.</p><p>Du kannst die Werte selbst eingeben – der Exposé-Text bleibt in der Prüfmaske zum Nachsehen geöffnet.</p>",
           [{ text: "Selbst eingeben", primaer: true, aktion: function () { document.querySelector('[data-aktion="start-manuell-text"]').click(); } }, { text: "Abbrechen" }]);
         break; }
-      case "annahme-vorschlag": { var fa = o.felder[el.dataset.feld]; fa.wert = parseFloat(el.dataset.wert); fa.zustand = "annahme"; fa.herkunft = "manuell"; o.bestaetigt = false; speichern(); toast("Als Annahme eingetragen – Ampeln bleiben grau, bis der Wert belegt ist."); render(); break; }
+      case "annahme-vorschlag": { var fa = o.felder[el.dataset.feld], wlA = fa.zustand === "leer"; fa.wert = parseFloat(el.dataset.wert); fa.zustand = "annahme"; fa.herkunft = "manuell"; if (!wlA) o.bestaetigt = false; speichern(); toast("Als Annahme eingetragen – Ampeln bleiben grau, bis der Wert belegt ist."); render(); break; }
       case "feld-waehlen": gewaehltesFeld = el.dataset.feld; render(); var m = document.getElementById("detail"); if (m && window.innerWidth < 1100) m.scrollIntoView({ behavior: "smooth", block: "start" }); break;
       case "kandidat-uebernehmen": {
         var f = o.felder[el.dataset.feld], wahl = document.querySelector('input[name="kand"]:checked');
@@ -860,7 +920,7 @@
         f.geklaert = true; f.zustand = "wert"; o.bestaetigt = false; speichern(); weiterZumNaechsten(el.dataset.feld, "Übernommen."); break; }
       case "ort-uebernehmen": o.ort = document.getElementById("f-ort").value.trim(); o.bundesland = document.getElementById("f-bl").value; o.bundeslandAbgeleitet = false; o.felder.ORT.zustand = o.ort ? "wert" : "leer"; o.felder.ORT.wert = o.ort; o.bestaetigt = false; speichern(); weiterZumNaechsten("ORT", "Ort übernommen."); break;
       case "feld-speichern": case "feld-annahme": {
-        var id = el.dataset.feld, d = IFP.FELDER.filter(function (x) { return x.id === id; })[0], f2 = o.felder[id], roh = document.getElementById("f-wert").value;
+        var id = el.dataset.feld, d = IFP.FELDER.filter(function (x) { return x.id === id; })[0], f2 = o.felder[id], roh = document.getElementById("f-wert").value, wl2 = f2.zustand === "leer";
         if (d.text) { f2.wert = roh.trim() || null; f2.zustand = f2.wert ? "wert" : "leer"; }
         else {
           var n = zahlAus(roh);
@@ -869,15 +929,23 @@
           f2.wert = d.prozent ? n / 100 : n; f2.zustand = a === "feld-annahme" ? "annahme" : "wert";
         }
         if (f2.herkunft === "ki" || f2.herkunft === "bestaetigt") f2.herkunft = "korrigiert"; else if (!f2.herkunft) f2.herkunft = "manuell";
-        f2.unsicher = false; o.bestaetigt = false; speichern(); weiterZumNaechsten(id, a === "feld-annahme" ? "Als Annahme eingetragen." : "Übernommen."); break; }
-      case "feld-null": { var f3 = o.felder[el.dataset.feld]; f3.wert = 0; f3.zustand = "null"; f3.herkunft = f3.herkunft === "ki" ? "korrigiert" : "manuell"; o.bestaetigt = false; speichern(); weiterZumNaechsten(el.dataset.feld, "0 bestätigt."); break; }
+        f2.unsicher = false; if (!wl2) o.bestaetigt = false; speichern(); weiterZumNaechsten(id, a === "feld-annahme" ? "Als Annahme eingetragen." : "Übernommen."); break; }
+      case "feld-null": { var f3 = o.felder[el.dataset.feld], wl3 = f3.zustand === "leer"; f3.wert = 0; f3.zustand = "null"; f3.herkunft = f3.herkunft === "ki" ? "korrigiert" : "manuell"; if (!wl3) o.bestaetigt = false; speichern(); weiterZumNaechsten(el.dataset.feld, "0 bestätigt."); break; }
       case "feld-leeren": { var f4 = o.felder[el.dataset.feld]; f4.wert = null; f4.zustand = "leer"; o.bestaetigt = false; speichern(); render(); break; }
       case "bestaetigen":
         if (offeneUnsichere() > 0) { toast("Bitte zuerst den gelb markierten Wert klären."); break; }
         o.bestaetigt = true; IFP.FELDER.forEach(function (d) { var f5 = o.felder[d.id]; if (f5.herkunft === "ki" && f5.zustand !== "leer") f5.herkunft = "bestaetigt"; });
         speichern(); gehe("luecken"); break;
       case "springe": { ev.preventDefault(); var zz = document.getElementById(el.dataset.ziel); if (zz) { zz.scrollIntoView({ behavior: "smooth", block: "start" }); zz.focus({ preventScroll: true }); } break; }
-      case "feld-oeffnen": gewaehltesFeld = el.dataset.feld; gehe("pruefen"); break;
+      case "feld-oeffnen": gewaehltesFeld = el.dataset.feld; rueckZiel = route() !== "pruefen" ? route() : rueckZiel; sprungZiel = "detail"; gehe("pruefen"); break;
+      case "fin-fehlt": {
+        var fid = el.dataset.feld, ff = o.felder[fid], nv = zahlAus((document.getElementById("fin-fehlt") || {}).value || "");
+        if (!IFP.istZahl(nv) || nv < 0) { toast("Bitte einen gültigen Betrag eingeben (z. B. 73)."); break; }
+        var wlF = ff.zustand === "leer";
+        ff.wert = nv; ff.zustand = el.dataset.art === "annahme" ? "annahme" : (nv === 0 ? "null" : "wert");
+        ff.herkunft = ff.herkunft === "ki" || ff.herkunft === "bestaetigt" ? "korrigiert" : (ff.herkunft || "manuell"); ff.unsicher = false;
+        if (!wlF) o.bestaetigt = false;
+        speichern(); render(); toast(el.dataset.art === "annahme" ? "Als Annahme eingetragen – die Ampeln dazu bleiben grau, bis der Wert belegt ist." : "Übernommen – der Cashflow ist jetzt berechnet."); break; }
       case "luecken-kopieren": {
         var ta = document.getElementById("luecken-text");
         var fertig = function () { toast("Text kopiert."); };
@@ -964,7 +1032,15 @@
     else if (b === "annahme") { if (wert === null) delete Z.einstellungen.annahmen[id]; else Z.einstellungen.annahmen[id] = wert; }
     else if (b === "schwelle") { var t = id.split("-"); Z.einstellungen.schwellen[t[1]] = Z.einstellungen.schwellen[t[1]] || {}; Z.einstellungen.schwellen[t[1]][t[2]] = wert; }
     speichern();
-    var fokusId = el.id; render(); var neu = document.getElementById(fokusId); if (neu) neu.focus();
+    setTimeout(function () {
+      var fokusbar = function () { return Array.prototype.slice.call(document.querySelectorAll("#inhalt a[href], #inhalt button, #inhalt input, #inhalt select, #inhalt textarea, #inhalt summary")); };
+      var ae = document.activeElement, aeId = ae && ae !== document.body ? ae.id : "", idx = ae && ae !== document.body && !aeId ? fokusbar().indexOf(ae) : -1;
+      var sx = window.scrollX, sy = window.scrollY;
+      render();
+      var ziel = aeId ? document.getElementById(aeId) : (idx >= 0 ? fokusbar()[idx] : null);
+      if (ziel) { ziel.focus({ preventScroll: true }); if (ziel.tagName === "INPUT" && ziel.type === "text") { try { ziel.select(); } catch (e) { /* ignorieren */ } } }
+      window.scrollTo(sx, sy);
+    }, 0);
   });
 
   function themeAnwenden() {
