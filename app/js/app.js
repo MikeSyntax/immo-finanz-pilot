@@ -52,17 +52,30 @@
   IFP.gehe = gehe;
 
   /* ---------- Rahmen ---------- */
+  /* Navigations-Icons: eigene, schlichte Linien-Icons (24 × 24), Farbe über CSS (Gold) – ersetzt die Unicode-Zeichen (Rückmeldung Mike, 25.11.2026) */
+  var NAV_ICONS = {
+    pruefen: '<path d="M4 11.5 12 5l8 6.5"/><path d="M6 10v9h6"/><circle cx="16.5" cy="16.5" r="2.8"/><path d="m18.6 18.6 2.4 2.4"/>',
+    objekte: '<rect x="4" y="4" width="16" height="5" rx="1.5"/><rect x="4" y="11" width="16" height="5" rx="1.5"/><path d="M4 19.5h16"/>',
+    unterlagen: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m9 14 2 2 4-4"/>',
+    regler: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+    person: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>',
+    info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.2"/>',
+    schild: '<path d="M12 3 5 6v5.5c0 4.3 3 7.6 7 9.5 4-1.9 7-5.2 7-9.5V6z"/><path d="m9 12 2 2 4-4"/>',
+    mehr: '<path d="M5 7h14M5 12h14M5 17h14"/>'
+  };
+  function navIcon(k) { return '<svg class="nav-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (NAV_ICONS[k] || "") + "</svg>"; }
+
   function rahmen(r, inhalt) {
     var s = SEITEN[r];
     document.title = s.titel + " · Immo Finanz Pilot";
-    var navs = [["pruefen", "start", "⌂", "Objekt prüfen"], ["objekte", "objekte", "▤", "Meine Objekte"], ["unterlagen", "unterlagen", "☑", "Unterlagen"], ["mehr", "mehr", "≡", "Mehr"]];
-    var seitenNav = [["start", "⌂ Objekt prüfen", "pruefen"], ["objekte", "▤ Meine Objekte", "objekte"], ["unterlagen", "☑ Unterlagen", "unterlagen"], ["einstellungen", "⚙ Bank-Annahmen", "x-einst"], ["haushalt", "⌂ Haushalt & Profil", "x-haus"], ["transparenz", "ℹ Über die App", "x-tr"], ["daten", "⇩ Meine Daten", "x-daten"]];
+    var navs = [["pruefen", "start", "pruefen", "Objekt prüfen"], ["objekte", "objekte", "objekte", "Meine Objekte"], ["unterlagen", "unterlagen", "unterlagen", "Unterlagen"], ["mehr", "mehr", "mehr", "Mehr"]];
+    var seitenNav = [["start", "Objekt prüfen", "pruefen", "pruefen"], ["objekte", "Meine Objekte", "objekte", "objekte"], ["unterlagen", "Unterlagen", "unterlagen", "unterlagen"], ["einstellungen", "Bank-Annahmen", "x-einst", "regler"], ["haushalt", "Haushalt & Profil", "x-haus", "person"], ["transparenz", "Über die App", "x-tr", "info"], ["daten", "Meine Daten", "x-daten", "schild"]];
     document.getElementById("seitenleiste-nav").innerHTML = seitenNav.map(function (n) {
       var aktiv = (n[2] === s.nav && n[2] !== "mehr") || n[0] === r;
-      return '<a href="#' + n[0] + '"' + (aktiv ? ' aria-current="page"' : "") + ">" + n[1] + "</a>";
+      return '<a href="#' + n[0] + '"' + (aktiv ? ' aria-current="page"' : "") + ">" + navIcon(n[3]) + "<span>" + esc(n[1]) + "</span></a>";
     }).join("");
     document.getElementById("tabbar").innerHTML = navs.map(function (n) {
-      return '<a href="#' + n[1] + '"' + (s.nav === n[0] ? ' aria-current="page"' : "") + '><span class="ico" aria-hidden="true">' + n[2] + "</span>" + n[3] + "</a>";
+      return '<a href="#' + n[1] + '"' + (s.nav === n[0] ? ' aria-current="page"' : "") + ">" + navIcon(n[2]) + esc(n[3]) + "</a>";
     }).join("");
     document.getElementById("kopf-titel").textContent = s.titel;
     var zb = document.getElementById("zurueck");
@@ -167,6 +180,27 @@
     if (f.fundstelleGeprueft === false) b.push('<span class="badge unsicher">Fundstelle nicht nachweisbar</span>');
     return b.join(" ");
   }
+  /* Nach dem Klären eines Werts direkt zum nächsten offenen Punkt springen (Rückmeldung Mike, 25.11.2026):
+     zuerst unsichere bzw. zu bestätigende Werte, danach fehlende Kernfelder; Reihenfolge wie in der Liste, ab dem aktuellen Feld. */
+  function offenerPunkt(f, d) { return (f.unsicher && !f.geklaert) || (d.id === "ORT" && Z.objekt.bundeslandAbgeleitet); }
+  function naechstesOffenesFeld(abId) {
+    var o = Z.objekt, alle = IFP.FELDER.filter(function (d) { return d.kern; }).concat(IFP.FELDER.filter(function (d) { return !d.kern; }));
+    var start = Math.max(0, alle.map(function (d) { return d.id; }).indexOf(abId));
+    var reihe = alle.slice(start + 1).concat(alle.slice(0, start + 1));
+    var u = reihe.filter(function (d) { return offenerPunkt(o.felder[d.id], d); })[0];
+    if (u) return u;
+    return reihe.filter(function (d) { return d.kern && d.id !== "ORT" && o.felder[d.id].zustand === "leer"; })[0] || null;
+  }
+  function weiterZumNaechsten(abId, meldung) {
+    var n = naechstesOffenesFeld(abId);
+    gewaehltesFeld = n ? n.id : abId;
+    render();
+    var offen = offeneUnsichere();
+    toast(meldung + (n ? (offen ? " Weiter mit „" + n.label + "“." : " Noch leer: „" + n.label + "“.") : " Alle Werte geklärt."));
+    var m = document.getElementById("detail");
+    if (m) { if (window.innerWidth < 1100) m.scrollIntoView({ behavior: "smooth", block: "start" }); var z = m.querySelector("h3"); if (z) { z.setAttribute("tabindex", "-1"); z.focus({ preventScroll: true }); } }
+  }
+
   function offeneUnsichere() {
     var o = Z.objekt, n = 0;
     IFP.FELDER.forEach(function (d) { var f = o.felder[d.id]; if (f.unsicher && !f.geklaert) n++; });
@@ -801,8 +835,8 @@
         if (!wahl) { toast("Bitte einen Wert auswählen."); break; }
         if (wahl.value === "eigen") { var v = zahlAus(document.getElementById("f-eigen").value); if (!IFP.istZahl(v) || v <= 0) { toast("Bitte einen gültigen Betrag eingeben."); break; } f.wert = v; f.herkunft = "korrigiert"; }
         else { var k = f.kandidaten[+wahl.value]; f.wert = k.wert; f.fundstelle = { seite: k.seite, ort: k.ort, zitat: k.zitat }; f.herkunft = "bestaetigt"; }
-        f.geklaert = true; f.zustand = "wert"; o.bestaetigt = false; speichern(); toast("Übernommen."); render(); break; }
-      case "ort-uebernehmen": o.ort = document.getElementById("f-ort").value.trim(); o.bundesland = document.getElementById("f-bl").value; o.bundeslandAbgeleitet = false; o.felder.ORT.zustand = o.ort ? "wert" : "leer"; o.felder.ORT.wert = o.ort; o.bestaetigt = false; speichern(); render(); break;
+        f.geklaert = true; f.zustand = "wert"; o.bestaetigt = false; speichern(); weiterZumNaechsten(el.dataset.feld, "Übernommen."); break; }
+      case "ort-uebernehmen": o.ort = document.getElementById("f-ort").value.trim(); o.bundesland = document.getElementById("f-bl").value; o.bundeslandAbgeleitet = false; o.felder.ORT.zustand = o.ort ? "wert" : "leer"; o.felder.ORT.wert = o.ort; o.bestaetigt = false; speichern(); weiterZumNaechsten("ORT", "Ort übernommen."); break;
       case "feld-speichern": case "feld-annahme": {
         var id = el.dataset.feld, d = IFP.FELDER.filter(function (x) { return x.id === id; })[0], f2 = o.felder[id], roh = document.getElementById("f-wert").value;
         if (d.text) { f2.wert = roh.trim() || null; f2.zustand = f2.wert ? "wert" : "leer"; }
@@ -813,8 +847,8 @@
           f2.wert = d.prozent ? n / 100 : n; f2.zustand = a === "feld-annahme" ? "annahme" : "wert";
         }
         if (f2.herkunft === "ki" || f2.herkunft === "bestaetigt") f2.herkunft = "korrigiert"; else if (!f2.herkunft) f2.herkunft = "manuell";
-        f2.unsicher = false; o.bestaetigt = false; speichern(); toast(a === "feld-annahme" ? "Als Annahme eingetragen." : "Übernommen."); render(); break; }
-      case "feld-null": { var f3 = o.felder[el.dataset.feld]; f3.wert = 0; f3.zustand = "null"; f3.herkunft = f3.herkunft === "ki" ? "korrigiert" : "manuell"; o.bestaetigt = false; speichern(); render(); break; }
+        f2.unsicher = false; o.bestaetigt = false; speichern(); weiterZumNaechsten(id, a === "feld-annahme" ? "Als Annahme eingetragen." : "Übernommen."); break; }
+      case "feld-null": { var f3 = o.felder[el.dataset.feld]; f3.wert = 0; f3.zustand = "null"; f3.herkunft = f3.herkunft === "ki" ? "korrigiert" : "manuell"; o.bestaetigt = false; speichern(); weiterZumNaechsten(el.dataset.feld, "0 bestätigt."); break; }
       case "feld-leeren": { var f4 = o.felder[el.dataset.feld]; f4.wert = null; f4.zustand = "leer"; o.bestaetigt = false; speichern(); render(); break; }
       case "bestaetigen":
         if (offeneUnsichere() > 0) { toast("Bitte zuerst den gelb markierten Wert klären."); break; }
